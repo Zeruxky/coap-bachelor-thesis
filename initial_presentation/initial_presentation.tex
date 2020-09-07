@@ -1,0 +1,95 @@
+\documentclass[xcolor=dvipsnames]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[autostyle]{csquotes}
+\usepackage[
+    backend=biber,
+    style=authoryear-icomp,
+    sortlocale=de_DE,
+    natbib=true,
+    url=false, 
+    doi=true,
+    eprint=false
+]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography entry title}{}
+\setbeamertemplate{bibliography entry location}{}
+\setbeamertemplate{bibliography entry note}{}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+\defbeamertemplate*{title page}{customized}[1][]
+{
+  \usebeamerfont{title}\inserttitle\par
+  \usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par
+  \bigskip
+  \usebeamerfont{author}\insertauthor\par
+  \usebeamerfont{institute}\insertinstitute\par
+  \usebeamerfont{date}\insertdate\par
+  \usebeamercolor[fg]{titlegraphic}\inserttitlegraphic
+}
+\title{Asynchronous vs. synchronous programming}
+\subtitle{Is it worth to await?}
+\author{Philip Wille}
+\institute[UIBK]
+{
+    \inst{1}%
+    Fakultät Informatik\\
+    Universität Innsbruck
+}
+\date{\today}
+\begin{document}
+    \frame{\maketitle}
+
+    \begin{frame}
+        \frametitle{Table of contents}
+        \tableofcontents
+    \end{frame}
+
+    \section{Introduction}
+    \begin{frame}
+        \frametitle{Introduction}
+        \begin{itemize}
+            \item A program interacts with many other systems, like databases, web services or file systems.
+            \item A program that requests data from an external system must wait for the response.
+            \item The time interval between sending a request and getting the corresponding response can take a long time.
+            \item Without optimization the program is doing busy waiting and blocks therefore the main thread.
+            \item This results in an unresponsive program. Therefore, for example a program with a graphical user interface (GUI) becomes unresponsive or can not provide a high throughput of requests.
+        \end{itemize}
+    \end{frame}
+
+    \section{Background}
+    \begin{frame}
+        \frametitle{Background}
+        \begin{itemize}
+            \item Two main paradigms of programming: \alert{synchronous programming} and \alert{asynchronous programming}.
+            \item Synchronous programming: \alert{Waiting for the termination} of an action. The \alert{main thread is blocked} in the meantime, because of busy waiting.
+            \item Asynchronous programming: \alert{Waiting for an event} that represents the termination of an action and \alert{notifies} the program to proceeding in the work flow. The \alert{main thread} can work on \alert{other tasks} in the meantime.
+        \end{itemize}
+    \end{frame}
+
+    \section{Technical work}
+    \begin{frame}
+        \frametitle{Technical work}
+        \begin{itemize}
+            \item Research question: Does benefit a server implementation from asynchronous programming?
+            \item Trying to answer this question based on a proof of concept of \href{https://github.com/smeshlink/CoAP.NET}{CoAP.NET}.
+            \item CoAP.NET is an open source C\# implementation of the \textbf{Co}nstrained \textbf{A}pplication \textbf{P}rotocol (\href{https://tools.ietf.org/html/rfc7252}{CoAP}).
+            \item \textit{"The Constrained Application Protocol (CoAP) is a specialized web transfer protocol for use with constrained nodes and constrained (e.g., low-power, lossy) networks."} (\cite{RFC_7252_CoAP})
+        \end{itemize}
+    \end{frame}
+    \section{Milestones}
+    \begin{frame}
+        \frametitle{Milestones}
+        \begin{table}[]
+            \begin{tabular}{ll}
+                & \textbf{Description} \\ \hline
+                \textbf{Milestone 1} & Rewrite to .NET Standard 2.0 \\ \hline
+                \textbf{Milestone 2} & Implement asynchronous pattern \\ \hline
+                \textbf{Milestone 3} & Specification from World-Direct \\ \hline
+                \textbf{Milestone 4} & Benchmark synchronous and asynchronous version \\ \hline
+                \textbf{Milestone 5} & Releasing V1.0 \\ \hline
+            \end{tabular}
+        \end{table}
+    \end{frame}
+\end{document}
