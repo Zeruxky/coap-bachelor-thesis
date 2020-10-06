@@ -1,14 +1,8 @@
-public Task<List<Person>> GetAllAsync(CancellationToken cancellationToken)
-{
-    var persons = this.context.Persons.ToListAsync(cancellationToken);
-    return persons;
+public async Task<int> CalculateAsync() {
+    await Task.Delay(1000).ConfigureAwait(false);
+    return Task.FromResult(1);
 }
 
-public async Task PrintPersonsAsync(CancellationToken cancellationToken)
-{
-    var persons = await persons.GetAllAsync(cancellationToken).ConfigureAwait(false);
-    foreach (var person in persons)
-    {
-        Console.WriteLine(person);
-    }
+public static Task Main(string[] args) {
+    var result = await CalculateAsync().ConfigureAwait(false);
 }

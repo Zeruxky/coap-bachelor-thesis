@@ -31,19 +31,20 @@
                 \item<2-> Asynchronous:
                 \begin{itemize}
                     \item<4-> Can \textcolor{uibkBlue}{\textbf{perform other tasks}} while the execution is running.
-                    \item<6-> \textcolor{uibkBlue}{\textbf{No busy waiting}} $\rightarrow$ Thread is \textcolor{uibkBlue}{\textbf{free}} for other tasks.
+                    \item<6-> The main thread will be \textcolor{uibkBlue}{\textbf{notified}}.
+                    \item<7-> \textcolor{uibkBlue}{\textbf{No busy waiting}} $\rightarrow$ Thread is \textcolor{uibkBlue}{\textbf{free}} for other tasks.
                 \end{itemize}
             \end{itemize}
-            \item<7-> \textcolor{uibkBlue}{\textbf{T}}ask-based \textcolor{uibkBlue}{\textbf{A}}synchronous \textcolor{uibkBlue}{\textbf{P}}attern (TAP)
+            \item<8-> \textcolor{uibkBlue}{\textbf{T}}ask-based \textcolor{uibkBlue}{\textbf{A}}synchronous \textcolor{uibkBlue}{\textbf{P}}attern (TAP)
             \begin{itemize}
-                \item<8-> Developed by Microsoft.
-                \item<9-> Simple usage.
-                \item<10-> Built-in in C\#.
+                \item<9-> Developed by Microsoft.
+                \item<10-> Simple usage.
+                \item<11-> Built-in in C\#.
             \end{itemize}
-            \item<11-> \textcolor{uibkBlue}{\textbf{Co}}nstrained \textcolor{uibkBlue}{\textbf{A}}pplication \textcolor{uibkBlue}{\textbf{P}}rotocol (CoAP)
+            \item<12-> \textcolor{uibkBlue}{\textbf{Co}}nstrained \textcolor{uibkBlue}{\textbf{A}}pplication \textcolor{uibkBlue}{\textbf{P}}rotocol (CoAP)
             \begin{itemize}
-                \item<12-> Subset of \textcolor{uibkBlue}{\textbf{H}}yper\textcolor{uibkBlue}{\textbf{t}}ext \textcolor{uibkBlue}{\textbf{T}}ransport \textcolor{uibkBlue}{\textbf{P}}rotocol (HTTP).
-                \item<13-> Specialized for \textcolor{uibkBlue}{\textbf{I}}nternet \textcolor{uibkBlue}{\textbf{o}}f \textcolor{uibkBlue}{\textbf{T}}hings (IoT) and \textcolor{uibkBlue}{\textbf{M}}achine-\textcolor{uibkBlue}{\textbf{t}}o-\textcolor{uibkBlue}{\textbf{M}}achine (M2M) devices.
+                \item<13-> Subset of \textcolor{uibkBlue}{\textbf{H}}yper\textcolor{uibkBlue}{\textbf{t}}ext \textcolor{uibkBlue}{\textbf{T}}ransport \textcolor{uibkBlue}{\textbf{P}}rotocol (HTTP).
+                \item<14-> Specialized for \textcolor{uibkBlue}{\textbf{I}}nternet \textcolor{uibkBlue}{\textbf{o}}f \textcolor{uibkBlue}{\textbf{T}}hings (IoT) and \textcolor{uibkBlue}{\textbf{M}}achine-\textcolor{uibkBlue}{\textbf{t}}o-\textcolor{uibkBlue}{\textbf{M}}achine (M2M) devices.
             \end{itemize}
         \end{itemize}
     \end{frame}
@@ -124,5 +125,157 @@
                 \draw[<-, thick, uibkOrange] (-3,-5.5) -- node[midway, above] {Response} (0,-5.5);
             \end{tikzpicture}
         \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Asynchronous execution in Java}
+        
+        \begin{listing}[H]
+            \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos]{java}{codes/example_asynchronous.java}
+            \caption{Asynchronous usage in Java}
+            \label{listing:asynchronous-usage-in-java}
+        \end{listing}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Asynchronous execution in C\#}
+
+        \begin{listing}[H]
+            \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos]{java}{codes/example_asynchronous.cs}
+            \caption{Asynchronous usage in C\#}
+            \label{listing:asynchronous-usage-in-csharp}
+        \end{listing}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Short introduction into CoAP}
+
+        \begin{itemize}
+            \item URI scheme based
+            \begin{itemize}
+                \item "coap:" "//" host [ ":" port ] path-abempty [ "?" query ]
+                \item "coaps:" "//" host [ ":" port ] path-abempty [ "?" query ]
+            \end{itemize}
+            \item REST-like
+            \begin{itemize}
+                \item GET, PUT, POST, DELETE, PATCH, ...
+            \end{itemize}
+            \item Specialized for using with constrained nodes and constrained networks.
+            \item Works with HTTP.
+            \item Fulfills requirements of environments like energy, building automation, and other machine-to-machine (M2M) applications.
+            \item Several implementations for many programming languages like C\# (CoAP.NET), Java (Californium), Python (CoAPthon), C (FreeCoAP) ...
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Example request in CoAP}
+
+        \begin{figure}[ht]
+            \begin{tikzpicture}
+                \node at (-3,.3) {Client};
+                \node at (0,.3) {Server};
+
+                \draw[thick, uibkOrange] (-3,0) -- (-3,-1);
+                \draw[thick, gray] (0,0) -- (0,-1);
+                \onslide<1->
+                \draw[->, thick, uibkOrange] (-3,-1) -- node[midway,above] {GET} (0,-1);
+                \onslide<2->
+                \draw[thick, gray] (-3,-1) -- (-3,-2);
+                \draw[thick, uibkOrange] (0,-1) -- node[right, align=left] {Header: GET (T=CON, Code=0.01, MID=0x7d34)\\Uri-Path: "temperature"} (0,-2);
+                \onslide<3->
+                \draw[thick, gray] (-3,-1) -- (-3,-3);
+                \draw[thick, uibkBlue] (0,-2) -- node[right, align=left] {Header: 2.05 Content (T=ACK, Code=2.05, MID=0x7d34)\\Payload: "22.3 C"} (0,-3);
+                \draw[<-, thick, uibkBlue] (-3,-3) -- node[midway,above] {2.05} (0,-3);
+                \onslide<4->
+                \draw[thick, gray] (-3, -3) -- (-3, -4);
+                \draw[thick, gray] (0, -3) -- (0, -4);
+            \end{tikzpicture}
+            \caption{GET request}
+            \label{example-get-request}
+        \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Example request in CoAP}
+
+        \begin{figure}[ht]
+            \begin{tikzpicture}[scale=0.4]
+                \draw[gray] (0, 0) -- (31, 0);
+                \foreach \x in {0,10,20}
+                    \foreach \y in {0,...,9}
+                        \draw (\y + \x, -0.2) -- (\y + \x, 0.2) node[anchor=south, gray] {$\y$};
+                \foreach \x in {0,...,1}
+                    \draw (\x + 30, -0.2) -- (\x + 30, 0.2) node[anchor=south, gray] {$\x$};
+                \draw[gray] (0, 0) rectangle (2, -1) node[pos=.5, text=uibkOrange] {\footnotesize 1};
+                \draw[gray] (2, 0) rectangle (4, -1) node[pos=.5, text=uibkOrange] {\footnotesize 1};
+                \draw[gray] (4, 0) rectangle (8, -1) node[pos=.5, text=uibkOrange] {\footnotesize 0};
+                \draw[gray] (8, 0) rectangle (16, -1) node[pos=.5, text=uibkOrange] {\footnotesize GET=1};
+                \draw[gray] (16, 0) rectangle (31, -1) node[pos=.5, text=uibkOrange] {\footnotesize MID=0x7d34};
+                \draw[gray] (0, -1) rectangle (4, -2) node[pos=.5, text=uibkOrange] {\footnotesize 11};
+                \draw[gray] (4, -1) rectangle (8, -2) node[pos=.5, text=uibkOrange] {\footnotesize 11};
+                \draw[gray] (8, -1) rectangle (31, -2) node[pos=.5, text=uibkOrange] {\footnotesize "temperature" (11 B) ...};
+            \end{tikzpicture}
+            \caption{Confirmable Request}
+            \label{confirmable-request}
+        \end{figure}
+        \begin{figure}[ht]
+            \begin{tikzpicture}[scale=0.4]
+                \draw[gray] (0, 0) -- (31, 0);
+                \foreach \x in {0,10,20}
+                    \foreach \y in {0,...,9}
+                        \draw (\y + \x, -0.2) -- (\y + \x, 0.2) node[anchor=south, gray] {$\y$};
+                \foreach \x in {0,...,1}
+                    \draw (\x + 30, -0.2) -- (\x + 30, 0.2) node[anchor=south, gray] {$\x$};
+                \draw[gray] (0, 0) rectangle (2, -1) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (2, 0) rectangle (4, -1) node[pos=.5, text=uibkBlue] {\footnotesize 2};
+                \draw[gray] (4, 0) rectangle (8, -1) node[pos=.5, text=uibkBlue] {\footnotesize 0};
+                \draw[gray] (8, 0) rectangle (16, -1) node[pos=.5, text=uibkBlue] {\footnotesize 2.05=69};
+                \draw[gray] (16, 0) rectangle (31, -1) node[pos=.5, text=uibkBlue] {\footnotesize MID=0x7d34};
+                \draw[gray] (0, -1) rectangle (1, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (1, -1) rectangle (2, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (2, -1) rectangle (3, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (3, -1) rectangle (4, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (4, -1) rectangle (5, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (5, -1) rectangle (6, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (6, -1) rectangle (7, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (7, -1) rectangle (8, -2) node[pos=.5, text=uibkBlue] {\footnotesize 1};
+                \draw[gray] (8, -1) rectangle (31, -2) node[pos=.5, text=uibkBlue] {\footnotesize "22.3 C" (6 B) ...};
+            \end{tikzpicture}
+            \caption{Piggybacked Response}
+            \label{piggybacked-response}
+        \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{CoAP.NET}
+
+        \begin{itemize}
+            \item Implementation of CoAP for C\#.
+            \item Development inactive.
+            \item Partially asynchronous.
+            \item Memory leaks.
+            \item Poor diagnostic capabilities.
+            \item Only .NET Framework.            
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Goal thesis}
+
+        \begin{itemize}
+            \item Goals
+            \begin{itemize}
+                \item Rewrite CoAP.NET to fully asynchronous version.
+                \item Fixing memory leaks.
+                \item Enhancing diagnostic capabilities.
+                \item Upgrading to .NET Standard 2.0.
+                \item Several improvements.
+            \end{itemize}
+            \item Supervisors
+            \begin{itemize}
+                \item assoc. Prof. Dr. Michael Felderer (University Innsbruck).
+                \item Andreas Dânek (World-Direct eBusiness solutions GmbH)
+            \end{itemize}
+        \end{itemize}
     \end{frame}
 \end{document}
