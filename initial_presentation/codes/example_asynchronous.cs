@@ -1,8 +1,6 @@
-public async Task<int> CalculateAsync() {
-    await Task.Delay(1000).ConfigureAwait(false);
-    return Task.FromResult(1);
-}
+public async Task<string> DownloadAsync(Uri uri, CancellationToken ct) {
+    var client = new DownloadClient();
+    var result = await client.DownloadAsync(uri, ct);
 
-public static Task Main(string[] args) {
-    var result = await CalculateAsync().ConfigureAwait(false);
+    return result;
 }
