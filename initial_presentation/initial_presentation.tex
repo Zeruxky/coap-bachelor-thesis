@@ -1,54 +1,73 @@
 \documentclass[11pt,t,usepdftitle=false,aspectratio=169,usenames,dvipsnames]{beamer}
-\usetheme[nototalframenumber,foot,logo]{uibk}
-\headerimage{3}
+\usetheme[nototalframenumber,foot,logo,nosectiontitlepage]{uibk}
+\headerimage{1}
 
 \usepackage[T1]{fontenc}
 \usepackage{xcolor}
 \usepackage{minted}
 \usepackage{tikz}
+\usepackage{hyperref}
 \usetikzlibrary{calc}
 
-\definecolor{uibkBlue}{HTML}{00325c}
-\definecolor{uibkOrange}{HTML}{ff9027}
-
-\title{Reimplementing CoAP for C\# with the Task-based Asynchronous Pattern}
-\subtitle{Is it worth to await?}
-\author{Philip Wille}
+\title[Initial presentation CoAP.NET]{Throughput on asynchronous server applications}
+\subtitle{A case study on CoAP.NET}
+\author{Philip Wille\\Supervisors: Michael Felderer, Andreas Danek}
+\date{2021-01-12}
 
 \begin{document}
-    \maketitle{}
-
+    \maketitle
     \begin{frame}
-        \frametitle{Introduction}
+        \vspace*{1cm plus 1fil}
+        \tableofcontents
+        \vspace*{0cm plus 1fil}
+    \end{frame}
+    
+    \section{Programming paradigms}
+    \begin{frame}
+        \frametitle{Programming paradigms}
         \begin{itemize}
-            \item<1-> Synchronous and asynchronous execution
+            \item<1-> Synchronous
             \begin{itemize}
-                \item<2-> Synchronous:
-                \begin{itemize}
-                    \item<3-> \textcolor{uibkBlue}{\textbf{Waiting for completion}} of method before continuing with program flow.
-                    \item<5-> \textcolor{uibkBlue}{\textbf{Busy waiting}} $\rightarrow$ Thread is marked as \textcolor{uibkBlue}{\textbf{blocked}}.
-                \end{itemize}
-                \item<2-> Asynchronous:
-                \begin{itemize}
-                    \item<4-> Can \textcolor{uibkBlue}{\textbf{perform other tasks}} while the execution is running.
-                    \item<6-> The main thread will be \textcolor{uibkBlue}{\textbf{notified}}.
-                    \item<7-> \textcolor{uibkBlue}{\textbf{No busy waiting}} $\rightarrow$ Thread is \textcolor{uibkBlue}{\textbf{free}} for other tasks.
-                \end{itemize}
+                \item<3-> Must \textcolor{uibkblue}{\textbf{stop}} program flow.
+                \item<5-> \textcolor{uibkblue}{\textbf{Checks}} periodically.
+                \item<7-> Marked as \textcolor{uibkblue}{\textbf{Blocked}} (Linux) or \textcolor{uibkblue}{\textbf{Waiting}} (Windows).
             \end{itemize}
-            \item<8-> \textcolor{uibkBlue}{\textbf{T}}ask-based \textcolor{uibkBlue}{\textbf{A}}synchronous \textcolor{uibkBlue}{\textbf{P}}attern (TAP)
+            \item<2-> Asynchronous
             \begin{itemize}
-                \item<9-> Developed by Microsoft.
-                \item<10-> Small changes to synchronous code for enabling asynchronous execution.
-                \item<11-> Built-in in C\#.
-            \end{itemize}
-            \item<12-> \textcolor{uibkBlue}{\textbf{Co}}nstrained \textcolor{uibkBlue}{\textbf{A}}pplication \textcolor{uibkBlue}{\textbf{P}}rotocol (CoAP)
-            \begin{itemize}
-                \item<13-> Designed for \textcolor{uibkBlue}{\textbf{M}}achine-\textcolor{uibkBlue}{\textbf{t}}o-\textcolor{uibkBlue}{\textbf{M}}achine (M2M) devices.
-                \item<14-> Request/response interaction model.
+                \item<4-> Can \textcolor{uibkblue}{\textbf{go further}} in program flow.
+                \item<6-> Will be \textcolor{uibkblue}{\textbf{notified}} by event.
+                \item<8-> \textcolor{uibkblue}{\textbf{Free}} for other tasks.
             \end{itemize}
         \end{itemize}
     \end{frame}
 
+    \subsection{Ordering a book in synchronous and asynchronous way}
+    \begin{frame}
+        \frametitle{Ordering a book}
+        \begin{itemize}
+            \item<1-> Synchronous way
+            \begin{enumerate}
+                \item<2-> You are ordering \textit{Clean Code (Robert C. Martin)} from amazon.com
+                \item<3-> You are sitting on the couch and waiting for the book.
+                \item<4-> Postman is knocking on your door and giving you the book.
+                \item<5-> You start reading it.
+                \item<6-> You have finished it.
+                \item<7-> You are going outside, meeting friends, go hiking and so on.
+            \end{enumerate}
+            \item<8-> Asynchronous way
+            \begin{enumerate}
+                \item<9-> You are ordering \textit{Clean Code (Robert C. Martin)} from amazon.com
+                \item<10-> You are going outside, meeting friends, go hiking and so on.
+                \item<11-> In the meanwhile the postman delivers the book to your home.
+                \item<12-> You are coming home and picking up the book.
+                \item<13-> You start reading it.
+                \item<14-> You have finished it.
+            \end{enumerate}
+        \end{itemize}
+    \end{frame}
+
+    \section{Synchronous and asynchronous server}
+    \subsection{Synchronous server}
     \begin{frame}
         \frametitle{Synchronous server}
         \begin{figure}[ht]
@@ -58,48 +77,57 @@
                 \node at (-6,.3) {Client 2};
                 \node at (-9,.3) {Client 1};
                 
-                \draw[thick, uibkOrange] (-9,0) -- node[left] {prepare}(-9,-0.5);
-                \draw[thick, gray] (-6,0) -- (-6,-0.5);
-                \draw[thick, gray] (-3,0) -- node[right, midway] {wait} (-3,-0.5);
-                \draw[thick, gray] (-0,0) -- (0,-1);
+                \draw[thick, uibkorange] (-9,0) -- node[left] {prepare}(-9,-0.5);
+                \draw[thick, uibkgraym] (-6,0) -- (-6,-0.5);
+                \draw[thick, uibkgraym] (-3,0) -- (-3,-0.5);
+                \draw[thick, uibkgraym] (-0,0) -- (0,-0.5);
                 \onslide<1->
-                \draw[->, thick, uibkOrange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
+                \draw[->, thick, uibkorange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
                 \onslide<2->
-                \draw[thick, uibkOrange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
-                \draw[thick, gray] (-6,-0.5) -- (-6,-1.5);
-                \draw[thick, gray] (-9,-0.5) -- node[left] {wait} (-9,-3.5);
+                \draw[thick, uibkorange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
                 \onslide<3->
-                \draw[->, thick, uibkOrange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+                \draw[->, thick, uibkorange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+                \draw[thick, uibkgraym] (0, -0.5) -- (0, -1);
                 \onslide<4->
-                \draw[thick, uibkOrange] (-0,-1) -- node [right] {execute} (0,-3);
-                \draw[->, thick, uibkBlue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
-                \draw[thick, gray] (-3,-1) -- node [left] {wait} (-3,-3);
-                \draw[thick, gray] (-6,-1.5) -- (-6,-5.5);
+                \draw[thick, uibkorange] (-0,-1) -- node [right] {execute} (0,-3);
                 \onslide<5->
-                \draw[<-, thick, uibkOrange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+                \draw[thick, uibkgraym] (-6, -0.5) -- (-6, -1);
+                \draw[thick, uibkblue] (-6, -1) -- node[left] {prepare} (-6, -1.5);
                 \onslide<6->
-                \draw[thick, uibkOrange] (-3,-3) -- (-3,-3.5);
+                \draw[->, thick, uibkblue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
+                \draw[thick, uibkgraym] (-3,-1) -- (-3,-1.5);
                 \onslide<7->
-                \draw[<-, thick, uibkOrange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+                \draw[<-, thick, uibkorange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+                \draw[thick, uibkgraym] (-3,-1.5) -- (-3,-3);
                 \onslide<8->
-                \draw[thick, uibkOrange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
-                \draw[thick, uibkBlue] (-3,-3.5) -- node [midway, left] {prepare SQL} (-3,-4);
-                \draw[thick, gray] (-0,-3) -- node [midway, right] {wait} (-0,-4);
+                \draw[thick, uibkorange] (-3,-3) -- (-3,-3.5);
+                \draw[<-, thick, uibkorange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+                \draw[thick, uibkgraym] (-9,-0.5) -- (-9,-3.5);
                 \onslide<9->
-                \draw[->, thick, uibkBlue] (-3,-4) -- node [midway, above] {SQL Request 2} (-0,-4);
+                \draw[thick, uibkorange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
                 \onslide<10->
-                \draw[thick, uibkBlue] (-0,-4) -- node [midway, right] {execute} (-0,-5);
+                \draw[thick, uibkblue] (-3,-3.5) -- node [midway, left] {prepare SQL} (-3,-4);
                 \onslide<11->
-                \draw[thick, gray] (-3,-4) -- node [midway, left] {wait} (-3,-5);
-                \draw[<-, thick, uibkBlue] (-3,-5) -- node [midway, above] {SQL Response 2} (-0,-5);
+                \draw[thick, uibkgraym] (-0,-3) -- (-0,-4);
+                \draw[->, thick, uibkblue] (-3,-4) -- node [midway, above] {SQL Request 2} (-0,-4);
                 \onslide<12->
-                \draw[thick, uibkBlue] (-3,-5) -- (-3,-5.5);
+                \draw[thick, uibkblue] (-0,-4) -- node [midway, right] {execute} (-0,-5);
                 \onslide<13->
-                \draw[<-, thick, uibkBlue] (-6,-5.5) -- node [midway, above] {Response 2} (-3,-5.5);
+                \draw[thick, uibkgraym] (-3,-4) -- (-3,-5);
+                \draw[<-, thick, uibkblue] (-3,-5) -- node [midway, above] {SQL Response 2} (-0,-5);
+                \onslide<14->
+                \draw[thick, uibkblue] (-3,-5) -- (-3,-5.5);
+                \onslide<15->
+                \draw[thick, uibkgraym] (-6,-1.5) -- (-6,-5.5);
+                \draw[<-, thick, uibkblue] (-6,-5.5) -- node [midway, above] {Response 2} (-3,-5.5);
+                \draw[thick, uibkgraym] (0, -5) -- (0, -5.5);
             \end{tikzpicture}
+            \caption{Sequence diagram of synchronous server}
+            \label{figure:sequence-diagram-of-synchronous-server}
         \end{figure}
     \end{frame}
 
+    \subsection{Asynchronous server}
     \begin{frame}
         \frametitle{Asynchronous server}
         \begin{figure}[ht]
@@ -109,36 +137,70 @@
                 \node at (-6,.3) {Client 2};
                 \node at (-9,.3) {Client 1};
                 
-                \draw[thick, uibkOrange] (-9,0) -- node[left] {prepare}(-9,-0.5);
-                \draw[thick, gray] (-6,0) -- (-6,-0.5);
-                \draw[thick, gray] (-3,0) -- (-3,-0.5);
-                \draw[thick, gray] (-0,0) -- node[right, midway] {wait} (0,-1);
-                \draw[->, thick, uibkOrange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
-                \draw[thick, uibkOrange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
-                \draw[thick, gray] (-6,-0.5) -- (-6,-1.5);
-                \draw[thick, gray] (-9,-0.5) -- node[left] {do other tasks} (-9,-3.5);
-                \draw[->, thick, uibkOrange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
-                \draw[thick, uibkOrange] (-0,-1) -- node [right] {execute} (0,-3);
-                \draw[->, thick, uibkBlue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
-                \draw[thick, gray] (-3,-1) -- (-3,-1.5);
-                \draw[thick, uibkBlue] (-3,-1.5) -- node[midway, left] {prepare SQL} (-3,-2);
-                \draw[thick, gray] (-3,-2) -- node[midway, left] {wait} (-3,-3);
-                \draw[<-, thick, uibkOrange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
-                \draw[thick, uibkOrange] (-3,-3) -- (-3,-3.5);
-                \draw[<-, thick, uibkOrange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
-                \draw[thick, uibkOrange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
-                \draw[thick, uibkBlue] (-0,-3) -- node [midway, right] {execute} (-0,-4);
-                \draw[->, thick, uibkBlue] (-3,-2) -- node [midway, above] {SQL Request 2} (-0,-2);
-                \draw[thick, gray] (-3,-3.5) -- (-3,-4);
-                \draw[<-, thick, uibkBlue] (-3,-4) -- node [midway, above] {SQL Response 2} (-0,-4);
-                \draw[thick, uibkBlue] (-3,-4) -- (-3,-4.5);
-                \draw[thick, gray] (0,-4) -- node [midway, right] {wait} (0,-5.5);
-                \draw[thick, gray] (-6,-1.5) -- (-6,-4.5);
-                \draw[<-, thick, uibkBlue] (-6,-4.5) -- node [midway, above] {Response 2} (-3,-4.5);
-                \draw[thick, uibkBlue] (-6,-4.5) -- node [midway, left] {process} (-6,-5.5);
-                \draw[thick, gray] (-3,-4.5) -- node [midway, left] {wait} (-3,-5.5);
+                \draw[thick, uibkorange] (-9,0) -- node[left] {prepare}(-9,-0.5);
+                \draw[thick, uibkgraym] (-6,0) -- (-6,-0.5);
+                \draw[thick, uibkgraym] (-3,0) -- (-3,-0.5);
+                \draw[thick, uibkgraym] (-0,0) -- (0,-0.5);
+                \onslide<1->
+                \draw[->, thick, uibkorange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
+                \onslide<2->
+                \draw[thick, uibkorange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
+                \onslide<3->
+                \draw[thick, uibkgraym] (-6,-0.5) -- (-6,-1.5);
+                \draw[->, thick, uibkorange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+                \draw[thick, uibkgraym] (0, -0.5) -- (0, -1);
+                \onslide<4->
+                \draw[thick, uibkorange] (-0,-1) -- node [right] {execute} (0,-3);
+                \onslide<5->
+                \draw[thick, uibkgraym] (-3,-1) -- (-3,-1.5);
+                \draw[->, thick, uibkblue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
+                \onslide<6->
+                \draw[thick, uibkblue] (-3,-1.5) -- node[midway, left] {prepare SQL} (-3,-2);
+                \onslide<7->
+                \draw[->, thick, uibkblue] (-3,-2) -- node [midway, above] {SQL Request 2} (-0,-2);
+                \onslide<8->
+                \draw[thick, uibkgraym] (-3,-2) -- (-3,-3);
+                \draw[<-, thick, uibkorange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+                \onslide<9->
+                \draw[thick, uibkorange] (-3,-3) -- (-3,-3.5);
+                \draw[<-, thick, uibkorange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+                \draw[thick, uibkgraym] (-9,-0.5) -- (-9,-3.5);
+                \onslide<10->
+                \draw[thick, uibkblue] (-0,-3) -- node [midway, right] {execute} (-0,-4);
+                \onslide<11->
+                \draw[thick, uibkorange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
+                \onslide<12->
+                \draw[thick, uibkgraym] (-3,-3.5) -- (-3,-4);
+                \draw[<-, thick, uibkblue] (-3,-4) -- node [midway, above] {SQL Response 2} (-0,-4);
+                \onslide<13->
+                \draw[thick, uibkblue] (-3,-4) -- (-3,-4.5);
+                \draw[thick, uibkgraym] (0,-4) -- (0,-5.5);
+                \draw[<-, thick, uibkblue] (-6,-4.5) -- node [midway, above] {Response 2} (-3,-4.5);
+                \draw[thick, uibkgraym] (-6,-1.5) -- (-6,-4.5);
+                \onslide<14->
+                \draw[thick, uibkblue] (-6,-4.5) -- node [midway, left] {process} (-6,-5.5);
+                \draw[thick, uibkgraym] (-3,-4.5) -- (-3,-5.5);
             \end{tikzpicture}
+            \caption{Sequence diagram of asynchronous server}
+            \label{figure:sequence-diagram-of-asynchronous-server}
         \end{figure}
+    \end{frame}
+
+    \section{Task-based Asynchronous Pattern (TAP)}
+    \begin{frame}
+        \frametitle{Task-based Asynchronous Pattern (TAP)}
+        \begin{itemize}
+            \item<1-> Developed by \textcolor{uibkblue}{\textbf{Microsoft}}.
+            \item<2-> Easy transformation \textcolor{uibkblue}{\textbf{Synchronous Code $\rightarrow$ Asynchronous Code}}.
+            \item<3-> \textcolor{uibkblue}{\textbf{Built-in}} in C\#.
+            \item<4-> Main components
+            \begin{itemize}
+                \item<5-> Task
+                \item<6-> Task<TResult>
+                \item<7-> CancellationToken
+                \item<8-> async/await keyword
+            \end{itemize}
+        \end{itemize}
     \end{frame}
 
     \begin{frame}
@@ -147,17 +209,7 @@
         \begin{listing}[H]
             \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos]{csharp}{codes/example_synchronous.cs}
             \caption{Synchronous usage in C\#}
-            \label{listing:asynchronous-usage-in-csharp}
-        \end{listing}
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Execute synchronous code asynchronously in C\#}
-
-        \begin{listing}[H]
-            \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos]{csharp}{codes/example_synchronous_code_asynchronously.cs}
-            \caption{Synchronous code executed asynchronously in C\#}
-            \label{listing:synchronous-code-executed-asynchronously-in-csharp}
+            \label{listing:synchronous-usage-in-csharp}
         \end{listing}
     \end{frame}
 
@@ -165,17 +217,7 @@
         \frametitle{Event-based execution in C\#}
         
         \begin{listing}[H]
-            \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos, lastline=15]{csharp}{codes/example_eventbased.cs}
-            \caption{DownloadResult to get string}
-            \label{listing:download-result-to-get-string}
-        \end{listing}
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Event-based execution in C\#}
-        
-        \begin{listing}[H]
-            \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos, firstline=17]{csharp}{codes/example_eventbased.cs}
+            \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\scriptsize, linenos]{csharp}{codes/example_eventbased.cs}
             \caption{Usage of events in C\#}
             \label{listing:usage-of-events-in-csharp}
         \end{listing}
@@ -191,81 +233,98 @@
         \end{listing}
     \end{frame}
 
+    \section{Constrained Application Protocol (CoAP)}
     \begin{frame}
-        \frametitle{Short introduction into CoAP}
-
+        \frametitle{Constrained Application Protocol (CoAP)}
         \begin{itemize}
-            \item URI scheme based
-            \begin{itemize}
-                \item "coap:" "//" host [ ":" port ] path-abempty [ "?" query ]
-                \item "coaps:" "//" host [ ":" port ] path-abempty [ "?" query ]
-            \end{itemize}
-            \item REST-like
-            \begin{itemize}
-                \item GET, PUT, POST, DELETE, PATCH, ...
-            \end{itemize}
-            \item Specialized for using with constrained nodes and constrained networks.
-            \item Works with HTTP.
-            \item Fulfills requirements of environments like energy, building automation, and other machine-to-machine (M2M) applications.
-            \item Several implementations for many programming languages like C\# (CoAP.NET), Java (Californium), Python (CoAPthon), C (FreeCoAP) ...
+            \item<1-> Defined in \href{https://tools.ietf.org/html/rfc7252}{RFC 7252}.
+            \item<2-> Designed for \textcolor{uibkblue}{\textbf{constrained}} environments.
+            \item<3-> \textcolor{uibkblue}{\textbf{Request/response}} interaction model.
+            \item<4-> Uses \textcolor{uibkblue}{\textbf{U}}ser \textcolor{uibkblue}{\textbf{D}}atagram \textcolor{uibkblue}{\textbf{P}}rotocol (UDP).
+            \item<5-> Implementation for several programming languages.
         \end{itemize}
     \end{frame}
 
+    \subsection{CoAP.NET}
     \begin{frame}
-        \frametitle{Example request in CoAP}
+        \frametitle{CoAP.NET}
+        \begin{itemize}
+            \item<1-> Implementation of CoAP for C\#.
+            \item<2-> Development inactive.
+            \item<3-> Partially asynchronous.
+            \item<4-> Offers a client and server implementation.
+        \end{itemize}
+    \end{frame}
 
+    \section{Bachelor thesis}
+    \begin{frame}
+        \frametitle{Bachelor thesis}
+
+        \begin{itemize}
+            \item<1-> \textcolor{uibkblue}{\textit{>>Has an asynchronous implementation of a server an impact on the throughput?<<}}
+            \item<2-> Reimplement client and server with TAP.
+            \item<3-> Implement tests for measuring throughput.
+            \item<4-> Compare synchronous version with asynchronous version.
+            \item<5-> Source code freely available at \href{https://github.com/world-direct/CoAP.NET}{GitHub}.
+            \item<6-> Collaboration with World-Direct eBusiness solutions GmbH.
+        \end{itemize}
+        \onslide<7->
         \begin{figure}[ht]
             \begin{tikzpicture}
-                \node at (-3,.3) {Client};
-                \node at (0,.3) {Server};
-
-                \draw[thick, uibkOrange] (-3,0) -- (-3,-1);
-                \draw[thick, gray] (0,0) -- (0,-1);
-                \onslide<1->
-                \draw[->, thick, uibkOrange] (-3,-1) -- node[midway,above] {GET} (0,-1);
-                \onslide<2->
-                \draw[thick, gray] (-3,-1) -- (-3,-2);
-                \draw[thick, uibkOrange] (0,-1) -- node[right, align=left] {Header: GET (T=CON, Code=0.01, MID=0x7d34)\\Uri-Path: "temperature"} (0,-2);
-                \onslide<3->
-                \draw[thick, gray] (-3,-1) -- (-3,-3);
-                \draw[thick, uibkBlue] (0,-2) -- node[right, align=left] {Header: 2.05 Content (T=ACK, Code=2.05, MID=0x7d34)\\Payload: "22.3 C"} (0,-3);
-                \draw[<-, thick, uibkBlue] (-3,-3) -- node[midway,above] {2.05} (0,-3);
-                \onslide<4->
-                \draw[thick, gray] (-3, -3) -- (-3, -4);
-                \draw[thick, gray] (0, -3) -- (0, -4);
+                \draw[step=2, uibkgraym, very thin] (0, 0) grid (8,-1);
+                \node at (0,.6) {12.01.2021};
+                \node at (2,-1.6) {04.2021};
+                \node at (4,.6) {06.2021};
+                \node at (6,-1.6) {07.2021};
+                \node at (8,.6) {09.2021};
+                \node at (10,-1.6) {10.2021};
+                \foreach \x in {0,2,4,6,8}
+                    \fill[fill=uibkblue] (\x, 0) rectangle (\x+2, -1);
+                \foreach \y in {0, 2, 4, 6, 8, 10}
+                    \draw[thick, uibkgraym] (\y, .3) -- (\y, -1.3);
+                \node[text=uibkorange] at (1,-.5) {M1};
+                \node[text=uibkorange] at (3,-.5) {M2};
+                \node[text=uibkorange] at (5,-.5) {M3};
+                \node[text=uibkorange] at (7,-.5) {M4};
+                \node[text=uibkorange] at (9,-.5) {M5};
             \end{tikzpicture}
-            \caption{GET request}
-            \label{example-get-request}
+            \caption{Phase-Milestone plan}
+            \label{figure:phase-milestone-plan}
         \end{figure}
     \end{frame}
 
     \begin{frame}
-        \frametitle{CoAP.NET}
-
-        \begin{itemize}
-            \item Implementation of CoAP for C\#.
-            \item Development inactive.
-            \item Partially asynchronous.         
-        \end{itemize}
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Goal thesis}
-
-        \begin{itemize}
-            \item Goals
-            \begin{itemize}
-                \item Rewrite CoAP.NET to fully asynchronous version.
-                \item Fixing memory leaks.
-                \item Enhancing diagnostic capabilities.
-                \item Upgrading to .NET Standard 2.0.
-                \item Several improvements.
-            \end{itemize}
-            \item Supervisors
-            \begin{itemize}
-                \item assoc. Prof. Dr. Michael Felderer (University Innsbruck).
-                \item Andreas Dânek (World-Direct eBusiness solutions GmbH)
-            \end{itemize}
-        \end{itemize}
+        \frametitle{Bachelor thesis}
+        \begin{figure}[ht]
+            \begin{tikzpicture}
+                \draw[step=2, uibkgraym, very thin] (0, 0) grid (8,-1);
+                \node at (0,.6) {12.01.2021};
+                \node at (2,-1.6) {04.2021};
+                \node at (4,.6) {06.2021};
+                \node at (6,-1.6) {07.2021};
+                \node at (8,.6) {09.2021};
+                \node at (10,-1.6) {10.2021};
+                \foreach \x in {0,2,4,6,8}
+                    \fill[fill=uibkblue] (\x, 0) rectangle (\x+2, -1);
+                \foreach \y in {0, 2, 4, 6, 8, 10}
+                    \draw[thick, uibkgraym] (\y, .3) -- (\y, -1.3);
+                \node[text=uibkorange] at (1,-.5) {M1};
+                \node[text=uibkorange] at (3,-.5) {M2};
+                \node[text=uibkorange] at (5,-.5) {M3};
+                \node[text=uibkorange] at (7,-.5) {M4};
+                \node[text=uibkorange] at (9,-.5) {M5};
+            \end{tikzpicture}
+            \caption{Phase-Milestone plan}
+            \label{figure:phase-milestone-plan}
+        \end{figure}
+        \onslide<1->
+        \begin{enumerate}
+            \item<2-> 12.01.2021: Initial presentation.
+            \item<3-> 04.2021: Finish asynchronous implementation.
+            \item<4-> 06.2021: Finish measurements.
+            \item<5-> 07.2021: Finish comparison.
+            \item<6-> 09.2021: Finish writing of bachelor thesis.
+            \item<7-> 10.2021: Final presentation.
+        \end{enumerate}
     \end{frame}
 \end{document}
