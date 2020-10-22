@@ -1,0 +1,41 @@
+\documentclass[a4paper,11pt,parskip=half,cleardoublepage=empty]{scrbook}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{eso-pic}
+
+\graphicspath{{img/}}
+\newcommand*{\xchapter}{\stepcounter{chapter}\setcounter{section}{0}\addchap}
+\renewcommand*{\thesection}{\arabic{section}}
+
+% define medatata
+\def\MTitle{Throughput on asynchronous server applications: A case study on CoAP.NET}
+\def\MAuthor{Philip Wille}
+\def\MKeywords{TAP \sep C\#\sep CoAP\sep Server application}
+\def\MOrg{Universität Innsbruck}
+\def\MDate{\today}
+\def\MInstitution{Department of Computer Science}
+\def\MSupervisor{Dr. Michael Felderer}
+\def\MGroup{Research Group Quality Engineering}
+
+\begin{document}
+
+    \input{titlepage}
+    \cleardoublepage
+    \tableofcontents 
+    \cleardoublepage
+    \pagenumbering{arabic}
+    \pagestyle{plain} 
+
+    \chapter{Introduction}
+    \label{chp:introduction}
+
+    \section{Motivation}
+    \label{sec:introduction}
+
+    The content goes here\ldots
+    \cite{turing1937computable}
+
+    \bibliographystyle{unsrt}
+    \bibliography{references}
+
+\end{document}
