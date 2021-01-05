@@ -2,14 +2,14 @@
 \usetheme[nototalframenumber,foot,logo,nosectiontitlepage]{uibk}
 \headerimage{1}
 
-\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{xcolor}
 \usepackage{minted}
 \usepackage{tikz}
 \usepackage{hyperref}
 \usetikzlibrary{calc}
 
-\title[Initial presentation CoAP.NET]{Throughput on asynchronous server applications}
+\title[Initial presentation CoAP.NET]{Increasing throughput of server applications by using asynchronous techniques}
 \subtitle{A case study on CoAP.NET}
 \author{Philip Wille\\Supervisors: Michael Felderer, Andreas Danek}
 \date{2021-01-12}
@@ -245,6 +245,24 @@
         \end{itemize}
     \end{frame}
 
+    \subsection{Example of CoAP message}
+    \begin{frame}
+        \frametitle{Example of CoAP message}
+        \textcolor{uibkblue}{\textbf{01}}\textcolor{uibkorange}{\textbf{01}}\textcolor{uibkblue}{\textbf{0100}}\textcolor{uibkorange}{\textbf{01000101}}\textcolor{uibkblue}{\textbf{1101111100011001}}\textcolor{uibkorange}{\textbf{00000000000000001110111110001110}}\textcolor{uibkblue}
+        \newline {\textbf{....}}\textcolor{uibkorange}{\textbf{11111111}}\textcolor{uibkblue}{\textbf{00000010}}
+        \begin{itemize}
+            \item \textcolor{uibkblue}{\textbf{Version}}: 1 (01......)
+            \item \textcolor{uibkorange}{\textbf{Type}}: Non-Confirmable (..01....)
+            \item \textcolor{uibkblue}{\textbf{Token Length}}: 4 (....0100)
+            \item \textcolor{uibkorange}{\textbf{Code}}: 2.05 Content (01000101)
+            \item \textcolor{uibkblue}{\textbf{Message ID}}: 51773 (11011111 00011001; Big endian)
+            \item \textcolor{uibkorange}{\textbf{Token}}: 61326 (00000000 00000000 11101111 10001110)
+            \item \textcolor{uibkblue}{\textbf{Options}}: Set of options
+            \item \textcolor{uibkorange}{\textbf{Payload marker}}: 255 (11111111)
+            \item \textcolor{uibkblue}{\textbf{Payload}}: 2 (00000010)
+        \end{itemize}
+    \end{frame}
+
     \subsection{CoAP.NET}
     \begin{frame}
         \frametitle{CoAP.NET}
@@ -261,14 +279,14 @@
         \frametitle{Bachelor thesis}
 
         \begin{itemize}
-            \item<1-> \textcolor{uibkblue}{\textit{>>Has an asynchronous implementation of a server an impact on the throughput?<<}}
-            \item<2-> Reimplement client and server with TAP.
-            \item<3-> Implement tests for measuring throughput.
-            \item<4-> Compare synchronous version with asynchronous version.
-            \item<5-> Source code freely available at \href{https://github.com/world-direct/CoAP.NET}{GitHub}.
-            \item<6-> Collaboration with World-Direct eBusiness solutions GmbH.
+            \item<1-> \textcolor{uibkblue}{\textit{>>Has an asynchronous implementation of a server an impact on its throughput?<<}}
+            \item<2-> Fully rewrite CoAP.NET library \onslide<3->\textbf{\textcolor{uibkblue}{except retransmission and block-wise transfer}}. 
+            \item<4-> Implement tests for measuring throughput.
+            \item<5-> Compare synchronous with asynchronous version.
+            \item<6-> Source code freely available at \href{https://github.com/world-direct/CoAP.NET}{GitHub}.
+            \item<7-> Collaboration with World-Direct eBusiness solutions GmbH.
         \end{itemize}
-        \onslide<7->
+        \onslide<8->
         \begin{figure}[ht]
             \begin{tikzpicture}
                 \draw[step=2, uibkgraym, very thin] (0, 0) grid (8,-1);
