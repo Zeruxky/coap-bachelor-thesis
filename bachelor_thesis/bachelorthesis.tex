@@ -1,7 +1,13 @@
 \documentclass[a4paper,11pt,parskip=half,cleardoublepage=empty]{scrbook}
+
+\usepackage[ngerman, english]{babel}
 \usepackage{wrapfig}
 \usepackage{graphicx}
 \usepackage{eso-pic}
+\usepackage[backend=biber,style=numeric]{biblatex}
+\usepackage{hyperref}
+
+\addbibresource{references.bib}
 
 \graphicspath{{img/}}
 \newcommand*{\xchapter}{\stepcounter{chapter}\setcounter{section}{0}\addchap}
@@ -26,16 +32,11 @@
     \pagenumbering{arabic}
     \pagestyle{plain} 
 
-    \chapter{Introduction}
-    \label{chp:introduction}
+    \include{chapters/einleitung.tex}
+    \include{chapters/implementierung.tex}
+    \include{chapters/messung.tex}
+    \include{chapters/diskussion_der_ergebnisse.tex}
+    \include{chapters/fazit.tex}
 
-    \section{Motivation}
-    \label{sec:introduction}
-
-    The content goes here\ldots
-    \cite{turing1937computable}
-
-    \bibliographystyle{unsrt}
-    \bibliography{references}
-
+    \printbibliography
 \end{document}
