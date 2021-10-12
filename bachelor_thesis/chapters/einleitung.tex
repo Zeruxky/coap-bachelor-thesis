@@ -14,11 +14,12 @@ Mit CoAP wurde die Entwicklung eines generischen Webprotokolls für die speziell
 
 \subsection{Constrained Application Protocol (CoAP)}
 \label{subsec:constrained-application-protocol}
+
 Das Constrained Application Protocol, abgekürzt CoAP, ist ein Internetprotokoll, das speziell für M2M Anwendungen, wie zum Beispiel smarte Energieverwaltung oder Hausautomatisierung (Internet of Things (IoT)), entwickelt wurde. Dabei bietet das Protokoll ein REST-ähnliches Interface für Mikrocontroller mit angeschlossenen Aktoren oder Sensoren (\textit{constrained nodes}) oder auch drahtlose Sensornetze (\textit{constrained networks}) an. Die sogenannten \textit{nodes} besitzen meist einen angeschlossenen 8-Bit-Mikrocontroller, der nur eine kleine begrenzte Menge an Arbeitsspeicher (RAM) und Readonly-Memory (ROM) beinhaltet. Bei \textit{contstrained networks}, wie z.B. \textit{IPv6 over Low-Power Wireless Area Networks (6LoWPANs)}, spielt die hohe Paketverlustrate und der für solche Netzwerke typische Datendurchsatz von wenigen 10 kbit/s eine große Rolle. CoAP ist durch den RFC 7252 \autocite{RFC7252} spezifiziert.
 
 Dabei bietet das \textit{Constrained Application Protocol} ein Interaktionsmodell für Anfragen und Antworten zwischen den, in der Anwendung definierten, Endpunkten an. Auch ist eine eingebaute Entdeckung von im Netzwerk angebotenen Services und Ressourcen im Protokoll definiert. Zusätzlich werden Hauptbestandteile des Internets, wie \textit{Unique Resource Identifiers} (URIs) und \textit{Internet Media Types} (zum Beispiel \textit{application/json}).
 
-Eine Unterstützung von \textit{Multicast} ist gegeben, wie auch ein sehr geringer Mehraufwand in der Datenübertragung. Dabei wurde Wert darauf gelegt, es einfach für eingebettete Systeme zu halten.  
+Eine Unterstützung von \textit{Multicast} ist gegeben, wie auch ein sehr geringer Mehraufwand in der Datenübertragung. Dabei wurde Wert darauf gelegt, es einfach für eingebettete Systeme zu halten.
 
 Zur Datenübertragung nutzt CoAP das User Datagram Protocol (UDP). Dieses unterscheidet sich zu Transmission Control Protocol (TCP) in den folgenden Punkten:
 \begin{itemize}
@@ -39,57 +40,57 @@ Die folgenden Funktionen sind ein essenzieller Bestandteil von CoAP:
     \item Sicherheitsmechanismen durch das Anbinden von \textit{Datagram Transport Layer Security} (DTLS).
 \end{itemize}
 
-\subsection{Begriffe in CoAP}
-\label{subsec:begiffe-in-coap}
+\subsubsection{Begriffe in CoAP}
+\label{subsubsec:begiffe-in-coap}
 
 Um den Kontext innerhalb des \textit{Constrained Application Protocols} zu verstehen, werden nachfolgend die wichtigsten Begriffe in CoAP kurz erklärt:
 \begin{itemize}
     \item Endpunkt (Endpoint):
-    \begin{itemize}
-        \item Ein Endpunkt lebt auf einen "Knoten". Ein Knoten ist vergleichbar mit dem Begriff "Host", der vorwiegend in Internetstandards Erwähnung findet.
-        \item Ein Endpunkt wird durch Multiplexing-Informationen auf der Transportschicht identifiziert, die eine UDP-Portnummer und eine Sicherheitszuordnung enthalten könnte.
-    \end{itemize}
+          \begin{itemize}
+              \item Ein Endpunkt lebt auf einen "Knoten". Ein Knoten ist vergleichbar mit dem Begriff "Host", der vorwiegend in Internetstandards Erwähnung findet.
+              \item Ein Endpunkt wird durch Multiplexing-Informationen auf der Transportschicht identifiziert, die eine UDP-Portnummer und eine Sicherheitszuordnung enthalten könnte.
+          \end{itemize}
     \item Ursprungsserver (Origin Server):
-    \begin{itemize}
-        \item Der Server, auf dem sich eine bestimmte Ressource befindet oder erstellt werden soll.
-    \end{itemize}
+          \begin{itemize}
+              \item Der Server, auf dem sich eine bestimmte Ressource befindet oder erstellt werden soll.
+          \end{itemize}
     \item Bestätigende Nachricht (Confirmable Message):
-    \begin{itemize}
-        \item Einige Nachrichten benötigen eine Bestätigung des Empfängers. Diese Nachrichten werden als \textit{bestätigt} behandelt.
-        \item Falls keine Pakete während der Übertragung verloren gingen, wird für jede Nachricht, die bestätigt werden muss, exakt eine Nachricht des Typs \textit{Acknowledgement} oder \textit{Reset}.
-    \end{itemize}
+          \begin{itemize}
+              \item Einige Nachrichten benötigen eine Bestätigung des Empfängers. Diese Nachrichten werden als \textit{bestätigt} behandelt.
+              \item Falls keine Pakete während der Übertragung verloren gingen, wird für jede Nachricht, die bestätigt werden muss, exakt eine Nachricht des Typs \textit{Acknowledgement} oder \textit{Reset}.
+          \end{itemize}
     \item Nicht bestätigende Nachricht (Non-confirmable Message):
-    \begin{itemize}
-        \item Als Gegensatz zu bestätigenden Nachrichten gibt es auch Nachrichten die nicht bestätigt werden müssen.
-        \item Dies trifft auf Nachrichten zu, die für bestimmte Anwendungsanforderungen häufiger wiederholt werden müssen, wie zum Beispiel wiederholtes Lesen eines Sensors.
-    \end{itemize}
+          \begin{itemize}
+              \item Als Gegensatz zu bestätigenden Nachrichten gibt es auch Nachrichten die nicht bestätigt werden müssen.
+              \item Dies trifft auf Nachrichten zu, die für bestimmte Anwendungsanforderungen häufiger wiederholt werden müssen, wie zum Beispiel wiederholtes Lesen eines Sensors.
+          \end{itemize}
     \item Bestätigungsnachricht (Acknowledgement Message):
-    \begin{itemize}
-        \item Eine solche Nachricht bestätigt den Empfang einer bestätigenden Nachricht. Eine Bestätigungsnachricht sagt nicht aus, ob die Anfrage, die mit einer bestätigenden Nachricht versendet wurde, erfolgreich war oder nicht.
-        \item Jedoch enthält die Bestätigungsnachricht auch eine sogenannte \textit{Piggybacked Response}.
-    \end{itemize}
+          \begin{itemize}
+              \item Eine solche Nachricht bestätigt den Empfang einer bestätigenden Nachricht. Eine Bestätigungsnachricht sagt nicht aus, ob die Anfrage, die mit einer bestätigenden Nachricht versendet wurde, erfolgreich war oder nicht.
+              \item Jedoch enthält die Bestätigungsnachricht auch eine sogenannte \textit{Piggybacked Response}.
+          \end{itemize}
     \item Rücksetzende Nachricht (Reset message):
-    \begin{itemize}
-        \item Diese Nachricht sagt aus, dass eine spezifische Nachricht (\textit{Confirmable} oder \textit{Non-confirmable}) empfangen wurde, jedoch einige Teile des Nachrichtenkontextes fehlt, um die richtig zu bearbeiten.
-        \item Dieses Verhalten tritt auf, wenn der zu empfangende Endpunkt neu gestartet hat und somit den Zustand vergessen hat, der zur vollständigen Interpretation der Nachricht nötig ist.
-        \item Ein absichtliches Provozieren einer rücksetzenden Nachricht \textit{Reset Message}, zum Beispiel durch das Senden einer leeren bestätigenden Nachricht (\textit{Empty Confirmable Message}), kann als eine kostengünstige Prüfung der Funktionsfähigkeit eines Endpunktes verwendet werden - vergleichbar mit einem \textit{Ping}.
-    \end{itemize}
+          \begin{itemize}
+              \item Diese Nachricht sagt aus, dass eine spezifische Nachricht (\textit{Confirmable} oder \textit{Non-confirmable}) empfangen wurde, jedoch einige Teile des Nachrichtenkontextes fehlt, um die richtig zu bearbeiten.
+              \item Dieses Verhalten tritt auf, wenn der zu empfangende Endpunkt neu gestartet hat und somit den Zustand vergessen hat, der zur vollständigen Interpretation der Nachricht nötig ist.
+              \item Ein absichtliches Provozieren einer rücksetzenden Nachricht \textit{Reset Message}, zum Beispiel durch das Senden einer leeren bestätigenden Nachricht (\textit{Empty Confirmable Message}), kann als eine kostengünstige Prüfung der Funktionsfähigkeit eines Endpunktes verwendet werden - vergleichbar mit einem \textit{Ping}.
+          \end{itemize}
     \item Piggybacked Response:
-    \begin{itemize}
-        \item Eine \textit{Piggybacked Response} ist direkt in eine \textit{Acknowledgement} (ACK) Nachricht inkludiert, die gesendet wird, um den Empfang der Anfrage für diese Antwort zu bestätigen.
-    \end{itemize}
+          \begin{itemize}
+              \item Eine \textit{Piggybacked Response} ist direkt in eine \textit{Acknowledgement} (ACK) Nachricht inkludiert, die gesendet wird, um den Empfang der Anfrage für diese Antwort zu bestätigen.
+          \end{itemize}
     \item Separate Antwort (Separate Response):
-    \begin{itemize}
-        \item Wenn eine \textit{Confirmable} Nachricht mit einer Anfrage mit einer \textit{Empty} Nachricht quittiert wird (z.B. weil der Server die Antwort nicht sofort hat), wird eine separate Antwort in einem separaten Nachrichtenaustausch gesendet.
-    \end{itemize}
+          \begin{itemize}
+              \item Wenn eine \textit{Confirmable} Nachricht mit einer Anfrage mit einer \textit{Empty} Nachricht quittiert wird (z.B. weil der Server die Antwort nicht sofort hat), wird eine separate Antwort in einem separaten Nachrichtenaustausch gesendet.
+          \end{itemize}
     \item Leere Nachricht (Empty Message):
-    \begin{itemize}
-        \item Eine Nachricht mit dem Code 0.00. Die Nachricht ist weder eine Anfrage noch eine Antwort. Es beinhaltet nur den 4-Byte-langen Kopf (\textit{header}).
-    \end{itemize}
+          \begin{itemize}
+              \item Eine Nachricht mit dem Code 0.00. Die Nachricht ist weder eine Anfrage noch eine Antwort. Es beinhaltet nur den 4-Byte-langen Kopf (\textit{header}).
+          \end{itemize}
 \end{itemize}
 
-\subsection{Nachrichtenübertragung}
-\label{subsec:nachrichtenuebertragung}
+\subsubsection{Nachrichtenübertragung}
+\label{subsubsec:nachrichtenuebertragung}
 
 CoAP nutzt zur Nachrichtenübertragung UDP, um den Austausch von Nachrichten asynchron ausführen zu können. Dies wird dadurch erreicht, dass eine weitere Schicht auf UDP aufbauend eingefügt wird (siehe Bild \ref{fig:abstrakte-darstellung-der-verschiedenen-schichten}). Diese Schicht kann optional auch einen Mechanismus zur Sicherstellung des Nachrichtenaustausches beinhalten. Dabei definiert CoAP vier verschiedene Arten von Nachrichten:
 \begin{itemize}
@@ -111,9 +112,6 @@ Diese vier Arten stehen orthogonal zueinander, sprich:
     \caption{Abstrakte Darstellung der verschiedenen Schichten}
     \label{fig:abstrakte-darstellung-der-verschiedenen-schichten}
 \end{figure}
-
-\subsubsection{Nachrichtenmodell}
-\label{subsubsec:nachrichtenmodell}
 
 Das Nachrichtenmodell des Constrained Application Protocols basiert auf den Austausch von Nachrichten über UDP. Dabei beginnt die Nachricht mit einem in der Länge fixierten Vier-Byte-Langen Kopfzeile (\textit{header}), gefolgt von einer einem optionalen Token (null bis acht Bytes lang), null oder mehr sogenannten Optionen. Diese Optionen sind vergleich mit den \textit{header fields} von HTTP. Nach den Optionen befindet sich ein sogenannter Anhang-Markierer (\textit{Payload marker}) der einem Byte mit dem Wert 0xFF (255) entspricht. Anschließend an den \textit{Payload marker} kommt der Anhang (\textit{Payload}). Dieses Format ist sowohl für Anfragen als auch für Antworten dasselbe.
 
@@ -137,9 +135,6 @@ Jedoch wird für den Austausch von Nachrichten im CoAP Kontext kein Sicherheitsm
     \label{fig:nachrichtenaustausch-ohne-sicherstellung-des-transfers}
 \end{figure}
 
-\subsubsection{Anfragen/Antwort Modell}
-\label{subsubsec:anfragen-antwort-modell}
-
 Kann eine einkommende Anfrage (\textit{Request}), die mithilfe einer \textit{Confirmable} Nachricht versendet wurde, sofort beantwortet werden, wird die Antwort (\textit{Response}) in der daraus resultierenden \textit{Acknowledgment} Nachricht zurückgesendet. Dieses Prinzip nennt man auch \textit{Piggybacked Response}. Das Bild \ref{fig:beispiel-eines-erfolgreichen-piggybacked-response} stellt diesen Mechanismus dar.
 
 \begin{figure}[h]
@@ -160,8 +155,8 @@ Ist der Server jedoch nicht sofort in der Lage die Anfrage zu beantworten, dann 
 
 Dabei macht CoAP Gebrauch von den bekannten Internetmethoden \textit{GET}, \textit{PUT}, \textit{POST} und \textit{DELETE} in einer ähnlichen Art wie es HTTP tut.
 
-\subsection{Nachrichtenformat}
-\label{subsec:nachrichtenformat}
+\subsubsection{Nachrichtenformat}
+\label{subsubsec:nachrichtenformat}
 
 Wie schon erwähnt, basiert der Nachrichtenaustausch von CoAP auf UDP. Dabei nimmt jede, über UDP versendete Nachricht ein ganzes UDP Datagramm. Dabei ist der Aufbau einer CoAP Nachricht einfach gehalten und startet mit einer Vier-Byte-langen-Kopfzeile (\textit{Header}). Diese beinhaltet folgende Daten (visualisiert im Bild \ref{fig:binaere-sturktur-eines-coap-headers}):
 \begin{itemize}
@@ -215,8 +210,8 @@ Ist eine \textit{Payload} gegeben, folgt nach der Gruppe von \textit{Options} ei
     \label{fig:binaere-sturktur-einer-vollstaendigen-coap-nachricht}
 \end{figure}
 
-\subsection{Aufbau einer Option}
-\label{subsec:aufbau-einer-option}
+\subsubsection{Aufbau einer Option}
+\label{subsubsec:aufbau-einer-option}
 
 Eine Option wird durch eine eindeutige Nummer identifiziert. Neben der Nummer besitzt eine Option auch einen Wert (\textit{Value}), den diese Option hält, und einen Indikator für die Länge des Wertes. Dabei wird die Nummer nicht direkt in die Nachricht kodiert, sondern die Options werden zuerst aufsteigend nach ihrer Nummer sortiert und dann wird eine Deltakodierung (Differenzbildung) zwischen der aktuellen Option und deren Vorgängern gebildet. Dies geschieht dadurch, dass alle vorherigen Differenzen (\textit{Deltas}) addiert werden und dann die Differenz zur aktuellen Option gebildet wird. Für die erste Option wird der Sonderfall behandelt, dass als vorheriges Delta ein Wert von null angenommen wird. Dies resultiert darin, dass für die erste Option die kodierte Differenz als Nummer der Option verwendet wird. Ein weiterer Sonderfall ist derjenige, wenn mehrere Instanzen der gleichen Option in der Kollektion von Options auftritt. Dabei ist die Differenz zwischen zwei gleichen Options immer null.
 
@@ -224,7 +219,107 @@ Eine Option fängt immer mit einem Byte an, das zwei Informationen enthält. Ein
 
 Um jedoch Differenzen und Längen, jenseits des Wertes fünfzehn, verwenden zu können, können dem \textit{Option Header} das \textit{Option Delta (extended)} und \textit{Option Length (extended)} folgen. Diese beiden können jeweils zwischen null und zwei Bytes lang sein. Nach diesen beiden folgt der \textit{Option Value}, der null oder mehr Bytes betragen kann.
 
-\subsubsection{Parsen einer Option}
-\label{subsubsec:parsen-einer-option}
+\subsection{Ausführungsparadigmen in der Informatik}
+\label{subsubsec:ausfuehrungsparadigmen-in-der-informatik}
 
+In der Informatik spricht man von zwei großen Ausführungsparadigmen, mit denen Programme bzw. Codeteile ausgeführt werden können: \textbf{synchrone} und \textbf{asynchrone Ausführung}. Diese unterscheiden sich in wesentlichen Punkten deutlich voneinander und bieten in verschiedenen Einsatzszenarien Vor- und Nachteile. Dabei unterstützen die geläufigsten Programmiersprachen von Haus eine synchrone Ausführung von Programmen, jedoch bieten nicht alle eine asynchrone Ausführung.
 
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{@{}lll@{}}
+            \toprule
+                          & Synchron                                       & Asynchron                                       \\ \midrule
+            Programmfluss & Stoppt den Programmfluss.                      & Kann im Programmfluss weiter gehen.             \\ \midrule
+            Beendigung    & Überprüft periodisch, ob Funktion beendet ist. & Ein Event markiert die Beendigung der Funktion. \\ \midrule
+            Main-Thread   & Ist als "Blocked" oder "Waiting" markiert.     & Ist frei für andere Aufgaben.                   \\ \bottomrule
+        \end{tabular}%
+    }
+    \caption{Vergleich zwischen synchroner und asynchroner Ausführung}
+    \label{tab:vergleich-synchroner-asynchroner-Ausfuehrung}
+\end{table}
+
+Um diese Unterschiede zwischen den beiden Paradigmen zu veranschaulichen, wird dies anhand einer Client-Server-Anwendung mit einer an den Server angeschlossenen Datenbank und zwei Clients verbildlicht (siehe Bild \ref{figure:sequendiagramm-eines-synchronen-servers} und \ref{figure:sequendiagramm-eines-asynchronen-servers}).
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \node at (0,.3) {Database};
+        \node at (-3,.3) {Server};
+        \node at (-6,.3) {Client 2};
+        \node at (-9,.3) {Client 1};
+
+        \draw[thick, uibkorange] (-9,0) -- node[left] {prepare}(-9,-0.5);
+        \draw[thick, uibkgraym] (-6,0) -- (-6,-0.5);
+        \draw[thick, uibkgraym] (-3,0) -- (-3,-0.5);
+        \draw[thick, uibkgraym] (-0,0) -- (0,-0.5);
+        \draw[->, thick, uibkorange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
+        \draw[thick, uibkorange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
+        \draw[->, thick, uibkorange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+        \draw[thick, uibkgraym] (0, -0.5) -- (0, -1);
+        \draw[thick, uibkorange] (-0,-1) -- node [right] {execute} (0,-3);
+        \draw[thick, uibkgraym] (-6, -0.5) -- (-6, -1);
+        \draw[thick, uibkblue] (-6, -1) -- node[left] {prepare} (-6, -1.5);
+        \draw[->, thick, uibkblue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
+        \draw[thick, uibkgraym] (-3,-1) -- (-3,-1.5);
+        \draw[<-, thick, uibkorange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+        \draw[thick, uibkgraym] (-3,-1.5) -- (-3,-3);
+        \draw[thick, uibkorange] (-3,-3) -- (-3,-3.5);
+        \draw[<-, thick, uibkorange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+        \draw[thick, uibkgraym] (-9,-0.5) -- (-9,-3.5);
+        \draw[thick, uibkorange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
+        \draw[thick, uibkblue] (-3,-3.5) -- node [midway, left] {prepare SQL} (-3,-4);
+        \draw[thick, uibkgraym] (-0,-3) -- (-0,-4);
+        \draw[->, thick, uibkblue] (-3,-4) -- node [midway, above] {SQL Request 2} (-0,-4);
+        \draw[thick, uibkblue] (-0,-4) -- node [midway, right] {execute} (-0,-5);
+        \draw[thick, uibkgraym] (-3,-4) -- (-3,-5);
+        \draw[<-, thick, uibkblue] (-3,-5) -- node [midway, above] {SQL Response 2} (-0,-5);
+        \draw[thick, uibkblue] (-3,-5) -- (-3,-5.5);
+        \draw[thick, uibkgraym] (-6,-1.5) -- (-6,-5.5);
+        \draw[<-, thick, uibkblue] (-6,-5.5) -- node [midway, above] {Response 2} (-3,-5.5);
+        \draw[thick, uibkgraym] (0, -5) -- (0, -5.5);
+    \end{tikzpicture}
+    \caption{Sequenzdiagramm eines synchronen Servers}
+    \label{figure:sequendiagramm-eines-synchronen-servers}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \node at (0,.3) {Database};
+        \node at (-3,.3) {Server};
+        \node at (-6,.3) {Client 2};
+        \node at (-9,.3) {Client 1};
+        
+        \draw[thick, uibkorange] (-9,0) -- node[left] {prepare}(-9,-0.5);
+        \draw[thick, uibkgraym] (-6,0) -- (-6,-0.5);
+        \draw[thick, uibkgraym] (-3,0) -- (-3,-0.5);
+        \draw[thick, uibkgraym] (-0,0) -- (0,-0.5);
+        \draw[->, thick, uibkorange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
+        \draw[thick, uibkorange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
+        \draw[thick, uibkgraym] (-6,-0.5) -- (-6,-1.5);
+        \draw[->, thick, uibkorange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+        \draw[thick, uibkgraym] (0, -0.5) -- (0, -1);
+        \draw[thick, uibkorange] (-0,-1) -- node [right] {execute} (0,-3);
+        \draw[thick, uibkgraym] (-3,-1) -- (-3,-1.5);
+        \draw[->, thick, uibkblue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
+        \draw[thick, uibkblue] (-3,-1.5) -- node[midway, left] {prepare SQL} (-3,-2);
+        \draw[->, thick, uibkblue] (-3,-2) -- node [midway, above] {SQL Request 2} (-0,-2);
+        \draw[thick, uibkgraym] (-3,-2) -- (-3,-3);
+        \draw[<-, thick, uibkorange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+        \draw[thick, uibkorange] (-3,-3) -- (-3,-3.5);
+        \draw[<-, thick, uibkorange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+        \draw[thick, uibkgraym] (-9,-0.5) -- (-9,-3.5);
+        \draw[thick, uibkblue] (-0,-3) -- node [midway, right] {execute} (-0,-4);
+        \draw[thick, uibkorange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
+        \draw[thick, uibkgraym] (-3,-3.5) -- (-3,-4);
+        \draw[<-, thick, uibkblue] (-3,-4) -- node [midway, above] {SQL Response 2} (-0,-4);
+        \draw[thick, uibkblue] (-3,-4) -- (-3,-4.5);
+        \draw[thick, uibkgraym] (0,-4) -- (0,-5.5);
+        \draw[<-, thick, uibkblue] (-6,-4.5) -- node [midway, above] {Response 2} (-3,-4.5);
+        \draw[thick, uibkgraym] (-6,-1.5) -- (-6,-4.5);
+        \draw[thick, uibkblue] (-6,-4.5) -- node [midway, left] {process} (-6,-5.5);
+        \draw[thick, uibkgraym] (-3,-4.5) -- (-3,-5.5);
+    \end{tikzpicture}
+    \caption{Sequenzdiagramm eines asynchronen Servers}
+    \label{figure:sequendiagramm-eines-asynchronen-servers}
+\end{figure}
