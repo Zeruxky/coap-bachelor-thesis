@@ -1,0 +1,37 @@
+\section{Implementierung}
+\label{sec:implementierung}
+
+Das Constrained Application Protocol wird für diese Bachelorarbeit in der Programmiersprache C\# implementiert. Dabei wird die Implementierung nach dem .NET Standard 2.1 entwickelt. Diese ermöglicht es die Bibliothek lauffähig unter den folgenden .NET Versionen und Laufzeitumgebungen zu verwenden: .NET 5.x und .NET Core 3.x. Somit sind alle aktuellen und zukünftig unterstützten Laufzeitumgebungen abgedeckt. Durch .NET Core ist auch eine Verwendung abseits des Betriebssystems Windows möglich.
+
+Die Asynchronität ist, wie schon beschrieben, durch das Sprachkonstrukt gegeben. Somit kann mittels TAP mit wenig Aufwand eine asynchrone API bereitgestellt werden. Zusätzlich nutzen wir die Drittanbieterbibliothek \textit{Task Parallel Library}, auch TPL abgekürzt. Diese Bibliothek erlaubt es ein sogenanntes Dataflow-Mesh (vergleichbar mit einer Pipeline, nur mit erweiterter Funktionalität und mit Asynchronität als Hauptfokus) aufzubauen und somit eine asynchrone Datenverarbeitung innerhalb einer Applikation zu ermöglichen. Dabei besteht ein solches Dataflow-Mesh aus sogenannten \textit{Dataflow Blocks}. Die vordefinierten Dataflow Blocks geben entweder die Möglichkeit Daten zu puffern (\textit{Buffering Blocks}) oder zu verarbeiten (\textit{Execution Blocks}). Als weitere Möglichkeit bietet TPL an eigene Dataflow Blocks zu definieren, indem man die entsprechenden Basisklassen oder Interfaces implementiert.
+
+\subsubsection{Gefundene Fehler}
+\label{subsubsec:gefundende-fehler}
+
+Nachfolgend sind hier Bugs aufgeführt, die innerhalb dieser Bachelorarbeit in CoAP.NET gefunden wurden:
+\begin{itemize}
+    \item Blockweiser Transfer propagiert keine Fehler. Das heißt, dass eine Übertragung von mehreren UDP-Paketen nicht gestoppt wird, wenn ein Statuscode von 4.08 (Request Entity Incomplete) oder 4.13 (Request Entity Too Large) zurückgegeben wird.
+    \item Der Client stoppt die Neuversendung von Anfragen nicht, obwohl eine Antwort mit der passenden MessageId zurückgesendet wurde.
+\end{itemize}
+
+\subsection{Struktur der Applikation}
+\label{subsec:struktur-der-applikation}
+
+Die Applikation gliedert sich in folgende Komponenten:
+\begin{enumerate}
+    \item Transports: Eine Transport-Klasse übernimmt das Senden und Empfangen von CoAP-Nachrichten auf dem jeweiligen Protokoll. Zum Beispiel ist die \textit{UdpTransport}-Klasse verantwortlich für das Senden und Empfangen von CoAP-Nachrichten, die mittels UDP übertragen werden.
+    \item Channels: Ein Channel repräsentiert eine aktive Verbindung zwischen einem CoAP-Client und CoAP-Server über ein beliebiges Protokoll. Für UDP gibt es z.B. eine \textit{UDPChannel}-Klasse, die auf einem vordefinierten Port auf UDP-Pakete horcht und über diesen Antworten an den jeweiligen Client zurücksendet.
+    \item Serializers: Ein \textit{Serializer} bietet Methoden für das De- als auch Serialisieren von CoAP-Nachrichten, für ein bestimmtes Nachrichtenformat und/oder eine CoAP-Version an. Dabei erhalten diese die Daten entweder von einem der \textit{Channels} oder von einer Ressource, die auf dem Server registriert ist.
+    \item Handlers: Ein Handler kümmert sich um die Verarbeitung und Weiterleitung von CoAP-Request an die jeweiligen Ressourcen oder von CoAP-Responses an den \textit{Serializer}.
+    \item Ressourcen: Eine Ressource ist vergleichbar zu einem HTTP- bzw. Controller-Endpunkt. Diese registriert sich beim Server unter einer definierten URI und gibt an, welche Methoden (GET, POST, PUT, DELETE) diese anbietet.
+\end{enumerate}
+
+Dabei stellt jede Komponente einen \textit{Dataflow Block} dar. Somit kann eine asynchrone Weiterleitung zwischen den einzelnen Komponenten sichergestellt werden. Dies geschieht dadurch, dass die einzelnen Blöcke miteinander verknüpft werden und auf ankommende Daten in einer asynchronen Weise warten. Damit können Daten, sobald diese verfügbar sind, umgehend verarbeitet werden. Auch übernimmt das Dataflow-Mesh die Verantwortung für die angewendete Parallelität und Synchronität der Daten. Somit kann eine flexible und anpassbare Verarbeitungskette implementiert werden, die vollkommen Asynchron arbeitet.
+
+Die API des Serializers ist inspiriert von der API des Sytem.Text.Json Serializers für JSON Dateien, der von Microsoft entwickelt wird. Der CoapMessageSerializer bietet dabei folgende Schnittstellen an:
+\begin{itemize}
+    \item \mintinline{csharp}{void CoapMessage Deserialize(ReadonlySpan<byte> value);}
+    \item \mintinline{csharp}{Task<CoapMessage> DeserializeAsync(Stream value, CancellationToken ct);}
+    \item \mintinline{csharp}{void byte[] Serialize(CoapMessage message);}
+    \item \mintinline{csharp}{Task SerializeAsync(Stream stream, CoapMessage message, CancellationToken ct);}
+\end{itemize}

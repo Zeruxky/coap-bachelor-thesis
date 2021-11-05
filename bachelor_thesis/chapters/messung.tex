@@ -1,0 +1,254 @@
+\section{Messung}
+\label{sec:messung}
+
+Zur Messung der Performance und Durchsatzrate der Implementierung betrachten wir nur den Serializer, da wir auf der Empfangsseite auf die bereit bestehenden .NET-Implementierungen der Sockets zur Datenübertragung von den UDP- bzw. TCP-Paketen setzen. Wir setzten dabei auf TCP als Übertragungsweg, da sich bei UDP die Paketgröße nicht verändern lässt bzw. auf maximal $2^{16}$ Bits (= 65.535 Bytes) beschränkt ist. Somit können wir die Paketgröße der CoAP-Nachricht, aufgrund der fehlenden Implementierung des blockweisen Transfers, nicht beliebig erhöhen. Um hier jedoch ein Szenario zu kreieren, indem wir auch sehr lange Nachrichten übermitteln können, wurde die Übertragung von CoAP-Nachrichten über TCP nach dem RFC 8323 von \citeauthor{RFC8323} implementiert.
+
+\subsection{Nachrichtenverarbeitung}
+\label{subsec:nachrichtenverarbeitung}
+
+In diesem Szenario wird die Zeit der Nachrichtenverarbeitung auf dem Server gemessen. Dabei sieht die Messung folgenden Ablauf vor:
+\begin{itemize}
+    \item Die Nachrichten werden von einem Client über das jeweilige Protokoll über TCP an den CoAP-Server versendet.
+    \item Dabei wird jeweils einmal eine langsame Übertragung simuliert, indem nur ein Byte pro Sekunde (1 B/s) verschickt wird, und einmal eine unveränderte Übertragung, indem man alle verfügbaren Bytes sofort versendet.
+    \item Der Server hört für TCP in der asynchronen Variante auf den Port 5683 und für die synchrone Variante auf Port 5684.
+    \item Dabei wird die Zeit gemessen, wie lange das Verarbeiten der Nachricht gedauert hat.
+    \item Die Zeitmessung wird am Client gestartet, sobald der Client mit dem Versenden der Nachricht beginnt. Gestoppt wird diese, sobald der Server die Nachricht deserialisiert hat.
+    \item Dieser Ablauf wird mehrere Male wiederholt und dann der Durchschnittswert ermittelt.
+\end{itemize}
+
+\subsubsection{BenchmarkDotnet}
+\label{BenchmarkDotnet}
+
+BenchmarkDotnet ist ein Software-Tool das vom dotnet-Team\footnote{Open-Source-Abteilung bei Microsoft für das .NET Ökosystem} entwickelt und zur Verfügung gestellt wird. Mit diesem Tool lassen sich automatisierte Laufzeittests von einem bestimmten Codeteil oder sogar einem ganzen Programm erzeugen.
+
+BenchmarkDotnet führt dafür den ausführenden Codeteil in mehreren Durchläufen aus und misst bei jedem Durchlauf verschiedene Parameter, die vom Nutzer festgelegt werden. Dabei wird standardmäßig die durchschnittliche Laufzeit, die Fehlertoleranz und Standardabweichung ermittelt. Auch können Parameter wie allokierten Speicher, Codeverlauf (Tracer), Anzahl von Lock's (Semaphore), Anzahl verarbeiteter Aufträge im Threadpool und vieles mehr aufgezeichnet werden.
+
+Die Ergebnisse werden dabei in verschiedene Formate exportiert. Standardmäßig werden diese in CSV, HTML und Markdown exportiert, jedoch stehen auch JSON, XML und auch als grafische Visualisierung in RPlot.
+
+\subsection{Serialisierung und Deserialisierung}
+\label{subsec:serializierung-und-deserializierung}
+
+In diesem Szenario wird die Verarbeitungszeit der synchronen als auch asynchronen Variante der Serializierungs- bzw. Deserialisierungsmethode gemessen. Dies wird mittels der Bibliothek BenchmarkDotnet\footnote{\href{https://benchmarkdotnet.org/index.html}{https://benchmarkdotnet.org/index.html}} durchgeführt. BenchmarkDotnet ist dabei ein Tool, dass es erlaubt nativ in C\# eine vordefinierte Methode bzw. einen bestimmten Teil eines Programms einem Benchmark zu unterziehen. Somit wird ermittelt, wie sich diese beiden Varianten, unabhängig von Netzwerkgeschwindigkeit, verhalten. Dabei wird sowohl die ermittelte Durchschnittszeit als auch der Speicherverbrauch mittels BenchmarkDotnet gemessen.
+
+Dabei können wir in BenchmarkDotnet mehrere verschiedene Durchläufe konstruieren, die sich in bestimmten Parametern unterscheiden. Um dabei die Länge der CoAP-Nachricht zu variieren, wird die Anzahl der Options und die Länge der Payload verändert. Dabei verändern sich die beiden Parameter in folgenden Schritten: 0, 1000, 100000. Somit sollten folgende Fälle abgedeckt sein:
+\begin{itemize}
+    \item Eine CoAP-Nachricht nur mit dem Header und dem Token.
+    \item Eine CoAP-Nachricht nur mit Options und keiner Payload.
+    \item Eine CoAP-Nachricht nur mit einer Payload und keinen Options.
+    \item Eine CoAP-Nachricht sowohl mit Options als auch einer Payload.
+\end{itemize}
+
+Auch sollte ersichtlich sein, unter welchen Umständen synchron oder asynchron besser abschneidet.
+
+Dabei ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei folgendermaßen deklariert:
+
+\begin{listing}[H]
+    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/benchmark_example.cs}
+    \caption{Beispiel eines Benchmarks in BenchmarkDotnet}
+    \label{listing:beispiel-eines-benchmarks-in-benchmarkdotnet}
+\end{listing}
+
+In der Main-Methode muss diese Klasse nun nur bei BenchmarkDotnet zur Ausführung registriert werden. Dies geschieht folgendermaßen:
+
+\begin{listing}[H]
+    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/execution_of_benchmark.cs}
+    \caption{Ausführen der Benchmark-Klasse}
+    \label{listing:ausfuehren-der-benchmark-klasse}
+\end{listing}
+
+\subsubsection{Nachrichtengenerierung für Benchmark}
+\label{subsubsec:nachrichtengenerierung-fuer-benchmark}
+
+Die CoAP-Nachrichten, die für den Benchmark benutzt werden, folgen folgendes Schema (x = Anzahl der Options; y = Länge der Payload in Bytes):
+\begin{itemize}
+    \item Die CoAP-Version ist immer auf 1.
+    \item Der Typ der Nachricht ist immer Acknowledgement.
+    \item Die Tokenlänge ist bei acht Bytes und wird zufällig generiert.
+    \item Der Code ist CREATED (2.01).
+    \item Die MessageId wird zufällig generiert.
+    \item Es werden x-mal Options vom Typ UriPath erstellt.
+    \item Die Payload zufällig generiert und ist y Bytes lang.
+\end{itemize}
+
+Diese wird für jeden Durchgang neu generiert und jedem einzelnen Benchmark übergeben.
+
+\subsection{Messaufbau}
+\label{subsec:messaufbau}
+
+Die Messungen werden auf einem Rechner mit AMD Ryzen 5 2600 (6 Kerne und 12 Threads) als CPU und mit einem Arbeitsspeicher von 16 GB durchgeführt.
+
+Die Netzwerkübertragung findet lokal statt - sprich über die Adresse 127.0.0.1 (Loopback / localhost). Mit dem Kommandozeilenbefehl \mintinline{bash}{start /affinity 1 Server.exe} wird der Server nur auf einem einzelnen Kern ausgeführt, damit nur die reine Leistung des Servers betrachtet wird und nicht durch das Scheduling des Rechners bzw. der CPU verfälscht wird.
+
+Für das Szenario der Serialisierung und Deserialisierung werden keine speziellen Einstellungen vorgenommen, da hier die Standardeinstellungen von BenchmarkDotnet verwendet werden.
+
+\subsection{Messergebnisse}
+\label{subsec:messergebnisse}
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error     & StdDev    & Gen 0  & Allocated \\ \midrule
+    SerializeAsync   & 0               & 0               & 5.695 μs & 0.0402 μs & 0.0336 μs & 0.0839 & 376 B     \\
+    Serialize        & 0               & 0               & 5.094 μs & 0.1006 μs & 0.1198 μs & 0.0687 & 288 B     \\
+    DeserializeAsync & 0               & 0               & 2.116 μs & 0.0406 μs & 0.0791 μs & 0.3777 & 1,584 B   \\
+    Deserialize      & 0               & 0               & 1.639 μs & 0.0312 μs & 0.0347 μs & 0.3948 & 1,656 B   \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 0 Options und mit einer Payload von 0 Bytes}
+    \label{tab:benchmark-0-0}
+\end{table}
+
+Ist nur der Header und der Token in der Nachricht enthalten, wie in Tabelle \ref{tab:benchmark-0-0} zusehen, dann sind sowohl asynchron als auch synchron gleichauf. Der Unterschied in der durchschnittlichen Laufzeit zwischen asynchron und synchron ist dem Overhead der asynchronen Zustandsmaschine, die vom C\#-Compiler generiert wird, geschuldet. Auch der leicht erhöhte Speicherverbrauch lässt sich darauf zurückführen.
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error     & StdDev    & Gen 0  & Allocated \\ \midrule
+    SerializeAsync   & 0               & 1000            & 5.914 μs & 0.0909 μs & 0.0805 μs & 0.0839 & 376 B     \\
+    Serialize        & 0               & 1000            & 6.207 μs & 0.1199 μs & 0.1177 μs & 0.3128 & 1,312 B   \\
+    DeserializeAsync & 0               & 1000            & 3.284 μs & 0.0636 μs & 0.0732 μs & 0.9232 & 3,824 B   \\
+    Deserialize      & 0               & 1000            & 3.261 μs & 0.0631 μs & 0.0727 μs & 0.9308 & 3,864 B   \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 0 Options und mit einer Payload von 1000 Bytes}
+    \label{tab:benchmark-0-1000}
+\end{table}
+
+Vergrößert man jedoch die Größe der Payload, zeigt sich, dass der Abstand geringer wird. Auch ist anzumerken, dass \textit{SerializeAsync} nun schneller ist als \textit{Serialize}. Waren es zuvor 0,6 Sekunden Unterschied zwischen \textit{Serialize} und \textit{SerializeAsync}, sind es nun 0,293 Sekunden. Bei \textit{Deserialize} und \textit{DeserializeAsync} betrug die Zeitdifferenz noch 0,477 Sekunden, verringert sich diese Differenz bei diesem Durchlauf auf 0,023 Sekunden.
+
+Der Speicherverbrauch blieb bei \textit{SerializeAsync} unverändert, im Gegensatz zu \textit{Serialize} mit einer Zunahme des allokierten Speichers um 1024 Bytes. Bei beiden Methoden für das Serialisieren von CoAP-Nachrichten hat sich der Speicherverbrauch zwar auch erhöht, jedoch blieb der Abstand zueinander unverändert.
+
+Eine mögliche Erklärung für den gleichbleibenden Speicherverbrauch von \textit{SerializeAsync} ist, dass bei \textit{Serialize} ein \textit{PooledMemoryBufferWriter} verwendet wird. Dieser stellt Methoden bereit, um auf einem Puffer, bestehend aus \mintinline{csharp}{Memory<byte>}s, zu schreiben. Dabei muss der Aufrufer nur Speicher vom \textit{PooledMemoryBufferWriter} \textit{"ausleihen"}, diesen mit den gewünschten Daten beschreiben und dem \textit{PooledMemoryBufferWriter} die Anzahl der geschriebenen Bytes mitteilen, damit die Position des \textit{PooledMemoryBufferWriter}s weitergeschoben wird. Dies wird im Codebeispiel \ref{listing:verwendung-des-pooled-memory-buffer-writers} veranschaulicht.
+
+\begin{listing}[H]
+    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/pooled_memory_buffer_writer_example.cs}
+    \caption{Verwendung des PooledMemoryBufferWriters}
+    \label{listing:verwendung-des-pooled-memory-buffer-writers}
+\end{listing}
+
+Der Nachteil des \textit{PooledMemoryBufferWriter}s ist, dass dieser seinen zur Verfügung stehenden Speicherbereich vergrößern muss, wenn die Kapazität erschöpft ist. Dabei vergrößert sich dieser so weit, damit der Puffer die zu schreibenden Daten aufnehmen kann. Auch ist der \textit{PooledMemoryBufferWriter} eine Eigenimplementierung, jedoch wurde im Laufe der Recherchen für diese Arbeit eine ähnliche Implementation von Microsoft\footnote{\href{https://docs.microsoft.com/en-us/dotnet/api/microsoft.toolkit.highperformance.buffers.memorybufferwriter-1?view=win-comm-toolkit-dotnet-7.0}{Dokumentation des MemoryBufferWriter}} gefunden, die dieses Problem möglicherweise besser handhabt, als die derzeitige Implementation. Da dies jedoch einen zu großen Aufwand darstellt, wurde darauf verzichtet.
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error     & StdDev    & Gen 0   & Gen 1   & Gen 2   & Allocated \\ \midrule
+    SerializeAsync   & 0               & 100000          & 8.611 μs   & 0.1519 μs & 0.1268 μs & 0.0763  & -       & -       & 376 B     \\
+    Serialize        & 0               & 100000          & 84.259 μs  & 1.1186 μs & 1.0464 μs & 31.1279 & 31.1279 & 31.1279 & 100,312 B \\
+    DeserializeAsync & 0               & 100000          & 57.500 μs  & 1.1007 μs & 1.2675 μs & 83.3130 & 83.3130 & 83.3130 & 264,040 B \\
+    Deserialize      & 0               & 100000          & 107.972 μs & 1.3266 μs & 1.1078 μs & 83.2520 & 83.2520 & 83.2520 & 263,984 B \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 0 Options und mit einer Payload von 100000 Bytes}
+    \label{tab:benchmark-0-100000}
+\end{table}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1   & Allocated \\ \midrule
+    SerializeAsync   & 1000            & 0               & 2,191.0 μs & 42.42 μs & 56.63 μs & 1316.4063 & -       & 5,383 KB  \\
+    Serialize        & 1000            & 0               & 325.0 μs   & 3.36 μs  & 2.98 μs  & 39.0625   & -       & 160 KB    \\
+    DeserializeAsync & 1000            & 0               & 950.3 μs   & 11.10 μs & 9.84 μs  & 122.0703  & 37.1094 & 526 KB    \\
+    Deserialize      & 1000            & 0               & 645.3 μs   & 12.27 μs & 12.05 μs & 74.2188   & 24.4141 & 323 KB    \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 1000 Options und mit einer Payload von 0 Bytes}
+    \label{tab:benchmark-1000-0}
+\end{table}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1   & Allocated \\ \midrule
+    SerializeAsync   & 1000            & 1000            & 2,137.2 μs & 41.04 μs & 76.08 μs & 1316.4063 & -       & 5,383 KB  \\
+    Serialize        & 1000            & 1000            & 338.5 μs   & 5.64 μs  & 5.00 μs  & 39.0625   & -       & 161 KB    \\
+    DeserializeAsync & 1000            & 1000            & 952.1 μs   & 12.95 μs & 12.11 μs & 120.1172  & 36.1328 & 529 KB    \\
+    Deserialize      & 1000            & 1000            & 592.3 μs   & 3.26 μs  & 2.72 μs  & 74.2188   & 17.5781 & 326 KB    \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 1000 Options und mit einer Payload von 1000 Bytes}
+    \label{tab:benchmark-1000-1000}
+\end{table}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1   & Gen 2   & Allocated \\ \midrule
+    SerializeAsync   & 1000            & 100000          & 2,227.7 μs & 44.22 μs & 96.13 μs & 1316.4063 & -       & -       & 5,383 KB  \\
+    Serialize        & 1000            & 100000          & 439.7 μs   & 5.70 μs  & 4.76 μs  & 64.4531   & 32.2266 & 32.2266 & 258 KB    \\
+    DeserializeAsync & 1000            & 100000          & 1,051.3 μs & 20.98 μs & 20.60 μs & 166.0156  & 83.0078 & 83.0078 & 783 KB    \\
+    Deserialize      & 1000            & 100000          & 739.3 μs   & 7.25 μs  & 6.78 μs  & 83.0078   & 83.0078 & 83.0078 & 580 KB    \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 1000 Options und mit einer Payload von 100000 Bytes}
+    \label{tab:benchmark-1000-100000}
+\end{table}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0       & Gen 1     & Gen 2     & Allocated \\ \midrule
+    SerializeAsync   & 100000          & 0               & 218.03 ms & 4.354 ms & 9.648 ms & 131750.0000 & -         & -         & 526 MB    \\
+    Serialize        & 100000          & 0               & 32.06 ms  & 0.496 ms & 0.440 ms & 3812.5000   & -         & -         & 16 MB     \\
+    DeserializeAsync & 100000          & 0               & 157.10 ms & 3.093 ms & 4.723 ms & 9250.0000   & 3750.0000 & 1000.0000 & 52 MB     \\
+    Deserialize      & 100000          & 0               & 109.40 ms & 2.118 ms & 4.030 ms & 5600.0000   & 2200.0000 & 800.0000  & 32 MB     \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 100000 Options und mit einer Payload von 0 Bytes}
+    \label{tab:benchmark-100000-0}
+\end{table}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0       & Gen 1     & Gen 2     & Allocated \\ \midrule
+    SerializeAsync   & 100000          & 1000            & 205.46 ms & 4.034 ms & 7.773 ms & 131666.6667 & -         & -         & 526 MB    \\
+    Serialize        & 100000          & 1000            & 31.66 ms  & 0.332 ms & 0.294 ms & 3843.7500   & 31.2500   & 31.2500   & 16 MB     \\
+    DeserializeAsync & 100000          & 1000            & 158.85 ms & 3.078 ms & 4.213 ms & 9750.0000   & 3750.0000 & 1000.0000 & 52 MB     \\
+    Deserialize      & 100000          & 1000            & 106.82 ms & 2.094 ms & 2.648 ms & 5800.0000   & 2400.0000 & 1000.0000 & 32 MB     \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 100000 Options und mit einer Payload von 1000 Bytes.}
+    \label{tab:benchmark-100000-1000}
+\end{table}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllllll@{}}
+    \toprule
+    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev    & Gen 0       & Gen 1     & Gen 2    & Allocated \\ \midrule
+    SerializeAsync   & 100000          & 100000          & 224.82 ms & 4.486 ms & 11.089 ms & 131750.0000 & -         & -        & 526 MB    \\
+    Serialize        & 100000          & 100000          & 31.83 ms  & 0.452 ms & 0.400 ms  & 3812.5000   & -         & -        & 16 MB     \\
+    DeserializeAsync & 100000          & 100000          & 157.10 ms & 3.139 ms & 4.979 ms  & 9250.0000   & 3500.0000 & 750.0000 & 52 MB     \\
+    Deserialize      & 100000          & 100000          & 110.62 ms & 2.163 ms & 2.960 ms  & 5400.0000   & 2000.0000 & 800.0000 & 32 MB     \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark mit 100000 Options und 100000 Bytes}
+    \label{tab:benchmark-100000-100000}
+\end{table}

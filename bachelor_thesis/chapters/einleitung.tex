@@ -238,7 +238,9 @@ In der Informatik spricht man von zwei großen Ausführungsparadigmen, mit denen
     \label{tab:vergleich-synchroner-asynchroner-Ausfuehrung}
 \end{table}
 
-Um diese Unterschiede zwischen den beiden Paradigmen zu veranschaulichen, wird dies anhand einer Client-Server-Anwendung mit einer an den Server angeschlossenen Datenbank und zwei Clients verbildlicht (siehe Bild \ref{figure:sequendiagramm-eines-synchronen-servers} und \ref{figure:sequendiagramm-eines-asynchronen-servers}).
+Um diese Unterschiede zwischen den beiden Paradigmen zu veranschaulichen, wird dies anhand einer Client-Server-Anwendung mit einer an den Server angeschlossenen Datenbank und zwei Clients verbildlicht (siehe Bild \ref{figure:sequendiagramm-eines-synchronen-servers} und \ref{figure:sequendiagramm-eines-asynchronen-servers}). Dabei ist der Server eine einfache Web-Applikation, die Daten mittels SQL von der angeschlossenen Datenbank holen.
+
+Senden nun beide Clients, in kurzem Zeitabstand zueinander, eine Anfrage an den Server, dann kann der synchrone Server nur die Anfrage bearbeiten, die zuerst eintrifft - in diesem Fall die des Client 1. Dies geschieht deswegen, da der Main-Thread bzw. der für das Empfangen der Pakete zuständige Thread auf die Rückantwort des Datenbankservers wartet. Dadurch wird die Anfrage von Client 2 auf dem Server zurückgehalten und erst bearbeitet, wenn die erste Anfrage bearbeitet und zurückgesendet wurde. Dieses Verhalten skaliert schlecht mit mehreren, gleichzeitig eintreffenden Anfragen, da der sogenannte \textit{Threadpool}\footnote{Entspricht einer Queue in der die zu bearbeitenden Aufgaben abgelegt werden.}, bei zu vielen, langandauernden Anfragen, seine volle Kapazität erreicht und somit keine neuen Anfragen / Aufgaben annehmen wird.
 
 \begin{figure}[ht]
     \centering
@@ -282,6 +284,10 @@ Um diese Unterschiede zwischen den beiden Paradigmen zu veranschaulichen, wird d
     \label{figure:sequendiagramm-eines-synchronen-servers}
 \end{figure}
 
+Wird nun statt einem synchronen Server ein asynchroner Server eingesetzt, ändert sich das beschriebene Szenario folgendermaßen: Trifft die Anfrage des Client 1 ein, wird diese, wie zuvor, sofort abgearbeitet. Jedoch geschieht dies auf einen anderen Thread, damit der Main-Thread bzw. der für das Empfangen der Pakete zuständige Thread wieder frei ist. Wird nun vom Client 2 eine Anfrage verschickt, dann kann der Server diese entgegennehmen und auf einen weiteren, freien Thread verlagern und bearbeiten. Je nachdem welche Anfrage schneller vom Datenbankserver bearbeitet wird, in diesem Fall die des Client 1, wird der Main-Thread bzw. der Thread der das Paket zuvor entgegengenommen hat, über die Beendigung der Datenbankanfrage benachrichtigt. Somit kann dieser Thread seinen Kontext synchronisieren und die Antwort an den Client 1 zurücksenden.
+
+Dieses Verfahren skaliert deutlich besser mit steigender Anzahl von Anfragen, jedoch kann dies auch mehr CPU- und Speicherressourcen verbrauchen. Dies hat den Grund, da der Kontextwechsel wieder mit den Main-Thread synchronisiert werden muss.
+
 \begin{figure}[ht]
     \centering
     \begin{tikzpicture}
@@ -323,3 +329,81 @@ Um diese Unterschiede zwischen den beiden Paradigmen zu veranschaulichen, wird d
     \caption{Sequenzdiagramm eines asynchronen Servers}
     \label{figure:sequendiagramm-eines-asynchronen-servers}
 \end{figure}
+
+\subsubsection{Asynchronität in C\#}
+\label{subsubsec:ansynchronitaet-in-csharp}
+
+Mit \textit{Task-based Asynchronous Pattern} (TAP) ermöglicht Microsoft in C\# Asynchronität. Dieses Pattern ermöglicht eine einfache Transformation von synchronen Code zu asynchronen Code ohne große Änderungen vornehmen zu müssen. Auch ist es von Haus aus im Sprachkonstrukt von C\# integriert und kann somit ohne zusätzliche Konfiguration verwendet werden.
+
+Dabei baut das asynchrone Ausführungsparadigma für C\# auf folgende Komponenten auf:
+\begin{itemize}
+    \item \mintinline{csharp}{Task}: Ermöglicht eine asynchrone Methode zu definieren.
+    \item \mintinline{csharp}{Task<TResult>}: Ermöglicht einen Rückgabewert vom Typ TResult von einer asynchronen Methode zurückzugeben.
+    \item \mintinline{csharp}{CancellationToken}: Ermöglicht es einen Aufruf einer asynchronen Methode vorzeitig zu beenden.
+    \item \mintinline{csharp}{async}/\mintinline{csharp}{await}: Schlüsselwörter um asynchrone Methoden zu deklarieren und auszuführen.
+\end{itemize}
+
+In dem nachfolgenden Codeausschnitt \ref{listing:synchrone-methode-in-csharp} wird eine Instanz eines DownloadClient erzeugt. Dieser hat eine Methode, mit der der Inhalt einer Webseite heruntergeladen und als \mintinline{csharp}{string} zurückgegeben werden kann.
+
+\begin{listing}[H]
+    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/example_synchronous.cs}
+    \caption{Synchrone Methode in C\#}
+    \label{listing:synchrone-methode-in-csharp}
+\end{listing}
+
+Dies hat den Nachteil, dass die Funktion den Main-Thread bzw. den Thread, der diese Methode aufgerufen hat, solange blockiert bis der gesamte Webseiteninhalt der angegebenen URI heruntergeladen wurde. Bei UI-Anwendungen lässt sich dadurch die Oberfläche nicht mehr bedienen und friert ein. Bei Verwendung in einer Konsolen-Applikation ohne UI ist der Main-Thread bis auf Weiteres blockiert und somit können andere Programmteile, die nicht auf das Ergebnis dieser Methode warten, nicht ausgeführt werden.
+
+Damit der aufzurufende Thread bzw. der Main-Thread nicht andauernd auf die Beendigung der Methode warten muss, kann man Events einsetzen (siehe Codebeispiel \ref{listing:eventbasierte-methode-in-csharp}). Diese beendigen vorzeitig die Exekution der Methode, indem der Aufrufer ein Objekt bekommt. Dieses Objekt repräsentiert den derzeitigen Zustand der Operation - also in diesem Fall das Herunterladen des Webseiteninhaltes. Dafür wird in Zeile 3 das \mintinline{csharp}{DownloadResult}-Objekt erzeugt. In Zeile 5 wird durch den Operator \mintinline{csharp}{+=} die nachfolgende anonyme Lambdafunktion \mintinline{csharp}{(content) => result.SetComplete(content)} als Beobachter des Events \mintinline{csharp}{client.DownloadComplete} registriert. Diese Lambdafunktion hat die Aufgabe den heruntergeladen Inhalt der Webseite in das DownloadResult zu setzen und als vollständig zu markieren. Dies passiert durch den Aufruf der Methode \mintinline{csharp}{SetComplete(string content)} auf dem DownloadResult-Objekt. Anschließend startet der DownloadClient die Operation mithilfe des Aufrufs \mintinline{csharp}{client.StartDownload(uri)}.
+
+Ist der Client mit dem Download fertig, dann feuert dieser das Event \mintinline{csharp}{DownloadComplete} und benachrichtigt somit alle darauf hörenden Empfänger - in diesem Fall die anonyme Lambdafunktion.
+
+Der aufzurufende Thread hat nun die Möglichkeit andere Funktionen auszuführen, solange der Download noch nicht beendet ist.
+
+\begin{listing}[H]
+    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/example_eventbased.cs}
+    \caption{Eventbasierte Methode in C\#}
+    \label{listing:eventbasierte-methode-in-csharp}
+\end{listing}
+
+Als nächste Ausbaustufe der Funktion gibt es noch die asynchrone Variante. Hierbei wird der DownloadClient um eine asynchrone Downloadmethode, namentlich DownloadAsync erweitert. Somit kann das Herunterladen des Webseiteninhaltes völlig asynchron und auf einem dezidiertem Thread passieren, ohne den Main-Thread bzw. aufzurufenden Thread zu beeinträchtigen. Dies kann jedoch nur solange ausgenutzt werden, solange keine andere Methode auf das Ergebnis der Downloadoperation angewiesen ist. Das Codebeispiel veranschaulicht diese asynchrone Methode und verbildlicht auch die geringen Änderungen zur synchronen Implementierung diese Methode (siehe Codebeispiel \ref{listing:asynchrone-methode-in-csharp}). Dieses Pattern ist auch als \textit{Task-based asynchronous pattern}, abgekürzt TAP, bekannt.
+
+\begin{listing}[H]
+    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/example_asynchronous.cs}
+    \caption{Asynchrone Methode in C\#}
+    \label{listing:asynchrone-methode-in-csharp}
+\end{listing}
+
+Hierbei ist auch zu erwähnen, dass eine Methode sich immer durch die Schlüsselwörter \mintinline{csharp}{async}/\mintinline{csharp}{await} gekennzeichnet ist. Dabei wird nur \mintinline{csharp}{async} vorausgesetzt, wenn innerhalb der asynchronen Methode auf ein Ergebnis einer anderen asynchronen Methode, mittels dem Schlüsselwort \mintinline{csharp}{await}, gewartet wird (siehe Zeile 3).
+
+\subsection{Bekannte Implementierungen}
+\label{subsec:bekannte-implementierungen}
+
+Für fast jede Sprache gibt es eine Implementierung von CoAP. Die bekannteste von allen ist hierbei Californium für Java\footnote{\href{https://www.eclipse.org/californium/}{https://www.eclipse.org/californium/}}. Andere Implementierungen gibt es, auszugsweise, für folgende Sprachen:
+\begin{itemize}
+    \item C\#: CoAP.NET
+    \item Python: CoAPython
+    \item C: libcoap
+    \item Javascript: Copper
+    \item Go: Go-Coap
+\end{itemize}
+
+\subsubsection{Californium}
+\label{subsubsec:californium}
+
+Die bekannteste Implementierung ist hierbei Californium für Java. Es wird von der Eclipse Foundation gefördert und von mehr als 50 Entwicklern gepflegt. Aufgrund der aktiven Entwicklung und großen Abdeckung der jeweiligen RFC Standards für CoAP wurde Californium für verschiedene Sprachen portiert - z.B. mit CoAP.NET für .NET und C\#.
+
+\subsubsection{CoAP.NET}
+\label{subsubsec:coap-net}
+
+CoAP.NET implementiert das Constrained Application Protocol in C\# und wurde von der Organisation \textit{smeshlink} bis Juli 2016 entwickelt. Es ist ein C\#-Port der CoAP-Implementation für Java \textit{Californium}, jedoch ist es zurzeit unbetreut. Auch eine vollständige Unterstützung von asynchronen Techniken ist nicht in CoAP.NET gegeben. Dennoch zählt es zu den bekanntesten Implementationen im C\#-Umfeld und wird auch in der Softwareentwicklungsfirma \textit{World-Direct eBusiness solutions GmbH} verwendet. Da diese Bachelorarbeit in Kooperation mit dieser Firma entstanden ist, wurde ein großer Fokus auf CoAP.NET gelegt.
+
+\subsection{Ziel der Arbeit}
+\label{subsec:ziel-der-arbeit}
+
+Die Forschungsfrage, die diese Bachelorarbeit zu beantworten versucht, lautet: \textit{Hat eine asynchrone Implementation eines Servers Einfluss auf dessen Durchsatzrate?}
+
+Um diese Frage ursprünglich zu beantworten, versuchte man in CoAP.NET eine komplette asynchrone Unterstützung zu implementieren und dann die synchrone Schnittstelle gegen die asynchrone Schnittstelle zu vergleichen. Dies hat sich als nicht rentabel herausgestellt, da zu viele Änderungen an der Codebasis von CoAP.NET vorzunehmen waren und somit auch der Vergleich nicht verhältnismäßig gewesen wäre.
+
+Darum fiel die Wahl auf eine komplette Neuentwicklung des Constrained Application Protocols in C\# mit modernen Technologien und Patterns. Dabei wurde bei der Entwicklung auf eine synchrone als auch asynchrone Schnittstelle Wert gelegt, um sowohl synchron als auch asynchron zu vergleichen. Somit sollte der Einfluss bewertet und aufgezeigt werden, ob eine asynchrone Implementation eines Servers einen merklichen Einfluss auf dessen Durchsatzrate besitzt.
+
+Das Resultat dieser Arbeit ist im Github Repository \href{https://github.com/world-direct/CoAP.NET}{world-direct/CoAP.NET} einsehbar.
