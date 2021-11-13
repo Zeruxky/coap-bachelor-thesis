@@ -9,7 +9,7 @@ Zur Messung der Performance und Durchsatzrate der Implementierung betrachten wir
 In diesem Szenario wird die Zeit der Nachrichtenverarbeitung auf dem Server gemessen. Dabei sieht die Messung folgenden Ablauf vor:
 \begin{itemize}
     \item Die Nachrichten werden von einem Client über das jeweilige Protokoll über TCP an den CoAP-Server versendet.
-    \item Dabei wird jeweils einmal eine langsame Übertragung simuliert, indem nur ein Byte pro Sekunde (1 B/s) verschickt wird, und einmal eine unveränderte Übertragung, indem man alle verfügbaren Bytes sofort versendet.
+    \item Dabei wird jeweils einmal eine langsame Übertragung simuliert, indem nur ein Byte alle 250 Millisekunden (4 B/s) verschickt wird, und einmal eine unveränderte Übertragung, indem man alle verfügbaren Bytes sofort versendet.
     \item Der Server hört für TCP in der asynchronen Variante auf den Port 5683 und für die synchrone Variante auf Port 5684.
     \item Dabei wird die Zeit gemessen, wie lange das Verarbeiten der Nachricht gedauert hat.
     \item Die Zeitmessung wird am Client gestartet, sobald der Client mit dem Versenden der Nachricht beginnt. Gestoppt wird diese, sobald der Server die Nachricht deserialisiert hat.
@@ -80,6 +80,125 @@ Die Messungen werden auf einem Rechner mit AMD Ryzen 5 2600 (6 Kerne und 12 Thre
 Die Netzwerkübertragung findet lokal statt - sprich über die Adresse 127.0.0.1 (Loopback / localhost). Mit dem Kommandozeilenbefehl \mintinline{bash}{start /affinity 1 Server.exe} wird der Server nur auf einem einzelnen Kern ausgeführt, damit nur die reine Leistung des Servers betrachtet wird und nicht durch das Scheduling des Rechners bzw. der CPU verfälscht wird.
 
 Für das Szenario der Serialisierung und Deserialisierung werden keine speziellen Einstellungen vorgenommen, da hier die Standardeinstellungen von BenchmarkDotnet verwendet werden.
+
+\subsection{Messergebnisse (Nachrichtenübertragung)}
+\label{subsec:messergebnisse-nachrichtenuebertragung}
+
+Für die Nachrichtenübertragung wurde die Anzahl der Options auf 100 und die Größe der Payload auf 100000 limitiert. Größere Werte haben keine bemerkenswerte Erkenntnis gebracht und wurde zwecks Übersichtlichkeit weggelassen.
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Start                             & Ende                              & Laufzeit         \\ \midrule
+    2021-11-11T10:17:31.0524370+01:00 & 2021-11-11T10:19:16.5499204+01:00 & 00:01:45.4974834 \\
+    2021-11-11T10:22:12.9707397+01:00 & 2021-11-11T10:23:58.8623836+01:00 & 00:01:45.8916439 \\
+    2021-11-11T10:28:32.5175832+01:00 & 2021-11-11T10:30:18.3405198+01:00 & 00:01:45.8229366 \\
+    2021-11-11T10:32:01.7660773+01:00 & 2021-11-11T10:33:47.4505300+01:00 & 00:01:45.6844527 \\
+    2021-11-11T10:35:34.7139187+01:00 & 2021-11-11T10:37:20.3576467+01:00 & 00:01:45.6437280 \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Asynchrone Übertragung mit 100 Options und mit einer Payload von 100 Bytes.}
+    \label{tab:asynchrone-uebertragung-100-100}
+\end{table}
+
+Berechnet man nun die durchschnittliche Laufzeit aus den Ergebnissen in Tabelle \ref{tab:asynchrone-uebertragung-100-100}, in der eine CoAP-Nachricht mit 100 Options und einer Payload von 100 Bytes übermittelt wurde, mittels folgender Formel. Diese Formel wird auch für die nachfolgenden Messungen verwendet, um deren durchschnittliche Laufzeit zu ermitteln.
+\begin{equation}
+    \begin{aligned}
+        t_{durchschnitt} ={} & \frac{\textnormal{01:45.4974834}}{5} + \frac{\textnormal{01:45.8916439}}{5} + \frac{\textnormal{01:45.8229366}}{5} + \\
+        & + \frac{\textnormal{01:45.6844527}}{5} + \frac{\textnormal{01:45.6437280}}{5} = 105,71 \textnormal{Sekunden}
+    \end{aligned}
+\end{equation}
+
+Daraus ergibt sich für die asynchrone Übertragung eine durchschnittliche Laufzeit von 105,71 Sekunden. Wird diese nun auch für die Messdaten in Tabelle \ref{tab:synchrone-uebertragung-100-100} berechnet, ergibt sich hier eine durchschnittliche Laufzeit von 105,61 Sekunden.
+
+Damit ist die synchrone Übertragung um 100 Millisekunden schneller als die asynchrone Übertragung. Durch die geringe Datenmenge von 25813 Bytes für die gesamte Nachricht ist dies nicht überraschend. Bei der synchronen Übertragung wird so lange gewartet, bis die komplette CoAP-Nachricht übertragen wurde. Im Gegensatz dazu wird bei der asynchronen Übertragung die Daten sofort verarbeitet, wenn diese verfügbar sind. Da jedoch immer nur vier Bytes pro Sekunde versendet werden, ist der Mehraufwand zum Erzeugen der asynchronen Zustandsmaschine zu groß und damit unvorteilhaft für die Performanz.
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Start                             & Ende                              & Laufzeit         \\ \midrule
+    2021-11-11T10:17:31.0525437+01:00 & 2021-11-11T10:19:16.0534992+01:00 & 00:01:45.0009555 \\
+    2021-11-11T10:22:12.9707397+01:00 & 2021-11-11T10:23:58.8617438+01:00 & 00:01:45.8910041 \\
+    2021-11-11T10:28:32.5175895+01:00 & 2021-11-11T10:30:18.3389314+01:00 & 00:01:45.8213419 \\
+    2021-11-11T10:32:01.7660713+01:00 & 2021-11-11T10:33:47.4500247+01:00 & 00:01:45.6839534 \\
+    2021-11-11T10:35:34.7139140+01:00 & 2021-11-11T10:37:20.3586945+01:00 & 00:01:45.6447805 \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Synchrone Übertragung mit 100 Options und mit einer Payload von 100 Bytes.}
+    \label{tab:synchrone-uebertragung-100-100}
+\end{table}
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Start                             & Ende                              & Laufzeit         \\ \midrule
+    2021-11-11T11:53:36.3360380+01:00 & 2021-11-11T11:59:17.2094861+01:00 & 00:05:40.8734481 \\
+    2021-11-11T11:25:13.6291350+01:00 & 2021-11-11T11:30:54.8399509+01:00 & 00:05:41.2108159 \\
+    2021-11-11T11:29:42.9196146+01:00 & 2021-11-11T11:35:24.2404882+01:00 & 00:05:41.3208736 \\
+    2021-11-11T11:32:06.6750943+01:00 & 2021-11-11T11:37:47.7269970+01:00 & 00:05:41.0519027 \\
+    2021-11-11T11:33:33.8796230+01:00 & 2021-11-11T11:39:14.4538810+01:00 & 00:05:40.5742580 \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Asynchrone Übertragung mit 100 Options und mit einer Payload von 1000 Bytes}
+    \label{tab:asynchrone-uebertragung-100-1000}
+\end{table}
+
+Entnimmt man die Messdaten aus der Tabelle \ref{tab:asynchrone-uebertragung-100-1000}, die einen Messdurchlauf für eine asynchrone Übertragung einer CoAP-Nachricht mit 100 Options und einer Payload von 1000 Bytes darstellt, ergibt sich eine durchschnittliche Laufzeit von 341,01 Sekunden.
+
+Für eine synchrone Übertragung derselben Nachricht, Messdaten aus Tabelle \ref{tab:synchrone-uebertragung-100-1000} entnommen, ergibt sich eine durchschnittliche Laufzeit von 341,00 Sekunden. Damit beträgt der Abstand zwischen synchron und asynchron nur 10 Millisekunden.
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Start                             & Ende                              & Laufzeit         \\ \midrule
+    2021-11-11T11:53:36.3360380+01:00 & 2021-11-11T11:59:17.2084637+01:00 & 00:05:40.8724257 \\
+    2021-11-11T11:25:13.6291344+01:00 & 2021-11-11T11:30:54.8195384+01:00 & 00:05:41.1904040 \\
+    2021-11-11T11:29:42.9196145+01:00 & 2021-11-11T11:35:24.2416850+01:00 & 00:05:41.3220705 \\
+    2021-11-11T11:32:06.6750956+01:00 & 2021-11-11T11:37:47.7273639+01:00 & 00:05:41.0522683 \\
+    2021-11-11T11:33:33.8796186+01:00 & 2021-11-11T11:39:14.4542465+01:00 & 00:05:40.5746279 \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Synchrone Übertragung mit 100 Options und mit einer Payload von 1000 Bytes}
+    \label{tab:synchrone-uebertragung-100-1000}
+\end{table}
+
+Erhöht man die Payload auf 10000 Bytes, ergibt sich für eine asynchrone Übertragung eine durchschnittliche Laufzeit von 2688,88 Sekunden und für eine synchrone Übertragung eine durchschnittliche Laufzeit von 2688,95 Sekunden. Die jeweiligen Daten wurden dabei von den Tabellen \ref{tab:asynchrone-uebertragung-100-10000} und \ref{tab:synchrone-uebertragung-100-10000} entnommen. Damit erhöht sich der Abstand auf 70 Millisekunden, das den Trend entspricht, dass mit steigender Payloadgröße, der Vorteil der Asynchronität tragender wird.
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Start                             & Ende                              & Laufzeit         \\ \midrule
+    2021-11-11T11:44:51.4637384+01:00 & 2021-11-11T12:29:39.2904876+01:00 & 00:44:47.8267492 \\
+    2021-11-11T11:45:48.8515388+01:00 & 2021-11-11T12:30:46.9714652+01:00 & 00:44:58.1199264 \\
+    2021-11-11T11:46:46.0080509+01:00 & 2021-11-11T12:31:33.3480246+01:00 & 00:44:47.3399737 \\
+    2021-11-11T11:47:52.2395272+01:00 & 2021-11-11T12:32:38.3763629+01:00 & 00:44:46.1368357 \\
+    2021-11-11T11:49:06.5417421+01:00 & 2021-11-11T12:33:51.5103142+01:00 & 00:44:44.9685721 \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Asynchrone Übertragung mit 100 Options und einer Payload von 10000 Bytes}
+    \label{tab:asynchrone-uebertragung-100-10000}
+\end{table}
+
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Start                             & Ende                              & Laufzeit         \\ \midrule
+    2021-11-11T11:44:51.4637476+01:00 & 2021-11-11T12:29:39.6267910+01:00 & 00:44:48.1630434 \\
+    2021-11-11T11:45:48.8515384+01:00 & 2021-11-11T12:30:46.9709319+01:00 & 00:44:58.1193935 \\
+    2021-11-11T11:46:46.0080501+01:00 & 2021-11-11T12:31:33.3486035+01:00 & 00:44:47.3405534 \\
+    2021-11-11T11:47:52.2395282+01:00 & 2021-11-11T12:32:38.3767620+01:00 & 00:44:46.1372338 \\
+    2021-11-11T11:49:06.5417372+01:00 & 2021-11-11T12:33:51.5109177+01:00 & 00:44:44.9691805 \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Synchrone Übertragung mit 100 Options und mit einer Payload von 10000 Bytes}
+    \label{tab:synchrone-uebertragung-100-10000}
+\end{table}
 
 \subsection{Messergebnisse (Deserialisierung und Serialisierung)}
 \label{subsec:messergebnisse-deserialisierung-serialisierung}
