@@ -1,7 +1,7 @@
 \section{Messung}
 \label{sec:messung}
 
-Zur Messung der Performance und Durchsatzrate der Implementierung betrachten wir nur den Serializer, da wir auf der Empfangsseite auf die bereit bestehenden .NET-Implementierungen der Sockets zur Datenübertragung von den UDP- bzw. TCP-Paketen setzen. Wir setzten dabei auf TCP als Übertragungsweg, da sich bei UDP die Paketgröße nicht verändern lässt bzw. auf maximal $2^{16}$ Bits (= 65.535 Bytes) beschränkt ist. Somit können wir die Paketgröße der CoAP-Nachricht, aufgrund der fehlenden Implementierung des blockweisen Transfers, nicht beliebig erhöhen. Um hier jedoch ein Szenario zu kreieren, indem wir auch sehr lange Nachrichten übermitteln können, wurde die Übertragung von CoAP-Nachrichten über TCP nach dem RFC 8323 von \citeauthor{RFC8323} implementiert.
+Zur Messung der Performance und Durchsatzrate der Implementierung betrachten wir nur den Serializer, da auf der Empfangsseite auf die bereits bestehenden .NET-Implementierungen der Sockets zur Datenübertragung von den UDP- bzw. TCP-Paketen gesetzt wird. Dabei wird auf TCP als Übertragungsweg gesetzt, da sich bei UDP die Paketgröße nicht verändern lässt bzw. auf maximal $2^{16}$ Bits (= 65.535 Bytes) beschränkt ist. Somit können wir die Paketgröße der CoAP-Nachricht, aufgrund der fehlenden Implementierung des blockweisen Transfers, nicht beliebig erhöhen. Um hier jedoch ein Szenario zu kreieren, indem wir auch sehr lange Nachrichten übermitteln können, wurde die Übertragung von CoAP-Nachrichten über TCP nach dem RFC 8323 von \citeauthor{RFC8323} \cite{RFC8323} implementiert.
 
 \subsection{Nachrichtenverarbeitung}
 \label{subsec:nachrichtenverarbeitung}
@@ -9,7 +9,7 @@ Zur Messung der Performance und Durchsatzrate der Implementierung betrachten wir
 In diesem Szenario wird die Zeit der Nachrichtenverarbeitung auf dem Server gemessen. Dabei sieht die Messung folgenden Ablauf vor:
 \begin{itemize}
     \item Die Nachrichten werden von einem Client über das jeweilige Protokoll über TCP an den CoAP-Server versendet.
-    \item Dabei wird jeweils einmal eine langsame Übertragung simuliert, indem nur ein Byte alle 250 Millisekunden (4 B/s) verschickt wird, und einmal eine unveränderte Übertragung, indem man alle verfügbaren Bytes sofort versendet.
+    \item Dabei wird eine langsame Übertragung simuliert, indem nur ein Byte alle 250 Millisekunden (4 B/s) verschickt wird.
     \item Der Server hört für TCP in der asynchronen Variante auf den Port 5683 und für die synchrone Variante auf Port 5684.
     \item Dabei wird die Zeit gemessen, wie lange das Verarbeiten der Nachricht gedauert hat.
     \item Die Zeitmessung wird am Client gestartet, sobald der Client mit dem Versenden der Nachricht beginnt. Gestoppt wird diese, sobald der Server die Nachricht deserialisiert hat.
@@ -40,7 +40,7 @@ Dabei können wir in BenchmarkDotnet mehrere verschiedene Durchläufe konstruier
 
 Auch sollte ersichtlich sein, unter welchen Umständen synchron oder asynchron besser abschneidet.
 
-Dabei ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei folgendermaßen deklariert:
+Dabei entspricht ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei folgendermaßen deklariert:
 
 \begin{listing}[H]
     \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/benchmark_example.cs}
@@ -59,7 +59,7 @@ In der Main-Methode muss diese Klasse nun nur bei BenchmarkDotnet zur Ausführun
 \subsubsection{Nachrichtengenerierung für Benchmark}
 \label{subsubsec:nachrichtengenerierung-fuer-benchmark}
 
-Die CoAP-Nachrichten, die für den Benchmark benutzt werden, folgen folgendes Schema (x = Anzahl der Options; y = Länge der Payload in Bytes):
+Die CoAP-Nachrichten, die für den Benchmark benutzt werden, folgen folgendem Schema (x = Anzahl der Options; y = Länge der Payload in Bytes):
 \begin{itemize}
     \item Die CoAP-Version ist immer auf 1.
     \item Der Typ der Nachricht ist immer Acknowledgement.
@@ -67,10 +67,10 @@ Die CoAP-Nachrichten, die für den Benchmark benutzt werden, folgen folgendes Sc
     \item Der Code ist CREATED (2.01).
     \item Die MessageId wird zufällig generiert.
     \item Es werden x-mal Options vom Typ UriPath erstellt.
-    \item Die Payload zufällig generiert und ist y Bytes lang.
+    \item Die Payload wird zufällig generiert und ist y Bytes lang.
 \end{itemize}
 
-Diese wird für jeden Durchgang neu generiert und jedem einzelnen Benchmark übergeben.
+Die CoAP-Nachricht wird für jeden Durchgang neu generiert und jedem einzelnen Benchmark übergeben.
 
 \subsection{Messaufbau}
 \label{subsec:messaufbau}
@@ -307,7 +307,7 @@ Wird die Payload weiter vergrößert, in diesem Fall auf 100000 Bytes (100 kB), 
     \label{tab:benchmark-1000-0-streamwriter}
 \end{table}
 
-Sobald sich jedoch die Anzahl der Options erhöht, sinkt die durchschnittliche Laufzeit der asynchronen Methoden und der Abstand zu den synchronen Methoden vergrößert sich (siehe Tabelle \ref{tab:benchmark-1000-0-streamwriter}). Hierbei steigt die Laufzeit von \textit{SerializeAsync} auf 2191 Sekunden und der Speicherverbrauch auf 5,383 KB. Im Gegensatz dazu schneidet \textit{Serialize} mit 325 Sekunden und einem Speicherverbrauch von 160 KB deutlich besser ab. Da dies eine ungewöhnliche Abweichung darstellt, wurde nachgeforscht und der Grund für die Verlangsamung von \textit{SerializeAsync} gefunden: Um Options, die einen \textit{string} als Wert besitzen, auf einen Stream zu schreiben, wurde die \textit{StreamWriter}-Klasse verwendet. Diese ermöglicht es, mit einem bestimmten Zeichenkodierung auf einen \textit{Stream} zu schreiben (siehe Codebeispiel \ref{listing:asynchrones-schreiben-eines-strings-auf-einen-stream-streamwriter}).
+Sobald sich jedoch die Anzahl der Options erhöht, sinkt die durchschnittliche Laufzeit der asynchronen Methoden und der Abstand zu den synchronen Methoden vergrößert sich (siehe Tabelle \ref{tab:benchmark-1000-0-streamwriter}). Hierbei steigt die Laufzeit von \textit{SerializeAsync} auf 2191 Sekunden und der Speicherverbrauch auf 5,383 KB. Im Gegensatz dazu schneidet \textit{Serialize} mit 325 Sekunden und einem Speicherverbrauch von 160 KB deutlich besser ab. Da dies eine ungewöhnliche Abweichung darstellt, wurde nachgeforscht und der Grund für die Verlangsamung von \textit{SerializeAsync} gefunden: Um Options, die einen \textit{string} als Wert besitzen, auf einen Stream zu schreiben, wurde die \textit{StreamWriter}-Klasse verwendet. Diese ermöglicht es, mit einer bestimmten Zeichenkodierung auf einen \textit{Stream} zu schreiben (siehe Codebeispiel \ref{listing:asynchrones-schreiben-eines-strings-auf-einen-stream-streamwriter}).
 
 \begin{table}[h]
     \resizebox{\textwidth}{!}{%
