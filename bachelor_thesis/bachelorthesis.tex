@@ -12,6 +12,13 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{amsmath}
+\usepackage[toc, page]{appendix}
+\usepackage{csquotes}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{quotes,babel,angles}
 
 \definecolor{uibkorange}{RGB}{246, 135, 18}
 \definecolor{uibkgraym}{RGB}{123, 121, 121}
@@ -49,4 +56,8 @@
     \include{chapters/fazit.tex}
 
     \printbibliography
+
+    \begin{appendices}
+        \include{chapters/appendix/tables.tex}
+    \end{appendices}
 \end{document}

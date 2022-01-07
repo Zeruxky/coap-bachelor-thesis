@@ -26,6 +26,37 @@ Die Applikation gliedert sich in folgende Komponenten:
     \item Ressourcen: Eine Ressource ist vergleichbar zu einem HTTP- bzw. Controller-Endpunkt. Diese registriert sich beim Server unter einer definierten URI und gibt an, welche Methoden (GET, POST, PUT, DELETE) diese anbietet.
 \end{enumerate}
 
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[squarednode/.style={rectangle, draw=uibkblue!60, fill=uibkgraym!5, very thick, minimum size=5mm}]
+        \node[squarednode] (udp-transport) {UdpTransport};
+        \node[squarednode] (tcp-transport) [below=of udp-transport]{TcpTransport};
+        \node[squarednode] (udp-channel) [right=of udp-transport]{UdpChannel};
+        \node[squarednode] (tcp-channel) [right=of tcp-transport]{TcpChannel};
+
+        \node[squarednode] (serializer) [below right=0.3 of udp-channel] {Serializer};
+        \node[squarednode] (request-handler) [right=3 of udp-channel] {RequestHandler};
+        \node[squarednode] (response-handler) [right=3 of tcp-channel] {ResponseHandler};
+
+        \node[squarednode] (router) [above=of request-handler] {Router};
+        \node[squarednode] (resource) [right=of request-handler] {Resource};
+        \node[squarednode] (controller) [below=1.075 of resource] {Controller};
+        
+        \draw[->, color=uibkorange, very thick] (udp-transport.east) -- (udp-channel.west);
+        \draw[->, color=uibkorange, very thick] (tcp-transport.east) -- (tcp-channel.west);
+        \draw[->, color=uibkorange, very thick] (udp-channel.east) -| (serializer.north);
+        \draw[->, color=uibkorange, very thick] (tcp-channel.east) -| (serializer.south);
+        \draw[->, color=uibkorange, very thick] (serializer.east) -- ++(0.2, 0) |- (request-handler.west);
+        \draw[->, color=uibkorange, very thick] (serializer.east) -- ++(0.2, 0) |- (response-handler.west);
+        \draw[->, color=uibkorange, very thick] (request-handler.north) -- (router.south);
+        \draw[->, color=uibkorange, very thick] (router.east) -| (resource.north);
+        \draw[->, color=uibkorange, very thick] (resource.south) -- (controller.north);
+        \draw[->, color=uibkorange, very thick] (response-handler.east) -- (controller.west);
+    \end{tikzpicture}
+    \caption{Überblick Softwarearchitektur}
+    \label{fig:ueberblick-softwarearchitektur}
+\end{figure}
+
 Dabei stellt jede Komponente einen \textit{Dataflow Block} dar. Somit kann eine asynchrone Weiterleitung zwischen den einzelnen Komponenten sichergestellt werden. Dies geschieht dadurch, dass die einzelnen Blöcke miteinander verknüpft und auf ankommende Daten in einer asynchronen Weise gewartet werden. Damit können Daten, sobald diese verfügbar sind, umgehend verarbeitet werden. Auch übernimmt das Dataflow-Mesh die Verantwortung für die angewendete Parallelität und Synchronität der Daten. Somit kann eine flexible und anpassbare Verarbeitungskette implementiert werden, die vollkommen Asynchron arbeitet.
 
 Die API des Serializers ist inspiriert von der API des Sytem.Text.Json Serializers für JSON Dateien, der von Microsoft entwickelt wird. Der CoapMessageSerializer bietet dabei folgende Schnittstellen an:
@@ -35,3 +66,95 @@ Die API des Serializers ist inspiriert von der API des Sytem.Text.Json Serialize
     \item \mintinline{csharp}{void byte[] Serialize(CoapMessage message);}
     \item \mintinline{csharp}{Task SerializeAsync(Stream stream, CoapMessage message, CancellationToken ct);}
 \end{itemize}
+
+\subsection{Besonderheiten}
+\label{subsec:besonderheiten}
+
+Nachfolgend werden Codeausschnitte und Teile des Projekts aufgelistet, die besondere Erwähnung finden. Wie schon beschrieben, wurde bei der Neuimplementierung von CoAP.NET darauf geachtet eine asynchrone Schnittstelle zur Verfügung zu stellen.
+
+\subsubsection{Parsen von Optionen}
+\label{subsubsec:parsen-von-optionen}
+
+Beim Verarbeitungsprozess der Optionen einer CoAP-Nachricht wurde darauf Wert gelegt, dass sich dieser Prozess auch für zukünftige CoAP-Versionen mit eventuell neuen Optionen eignet. Um dieses Ziel zu erreichen, wurde die Struktur der CoAP-Optionen in einer strikten Hierarchie, siehe Bild \ref{fig:hierarchie-der-coap-optionen-im-code} im Code abgebildet.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[squarednode/.style={rectangle, draw=uibkblue!60, fill=uibkgraym!5, very thick, minimum size=5mm}]
+        \node[squarednode] (coap-option) {CoapOption};
+        \node[squarednode] (coap-option-t) [below=of coap-option]{CoapOption<T>};
+        \node[squarednode] (string-option) [below left=of coap-option-t] {StringOption};
+        \node[squarednode] (uint-option) [below=of coap-option-t] {UIntOption};
+        \node[squarednode] (opaque-option) [below right=of coap-option-t] {OpaqueOption};
+
+        \node[squarednode] (other-string-options) [below=of string-option] {UriPath, \dots};
+        \node[squarednode] (other-uint-options) [below=of uint-option] {Accept, \dots};
+        \node[squarednode] (other-opaque-options) [below=of opaque-option] {ETag, \dots};
+
+        \draw[->, color=uibkorange, very thick] (other-string-options) -- (string-option.south);
+        \draw[->, color=uibkorange, very thick] (other-uint-options) -- (uint-option.south);
+        \draw[->, color=uibkorange, very thick] (other-opaque-options) -- (opaque-option.south);
+        \draw[->, color=uibkorange, very thick] (string-option.north) -- ++(0, 0.4) -| (coap-option-t.south);
+        \draw[->, color=uibkorange, very thick] (uint-option.north) -- (coap-option-t.south);
+        \draw[->, color=uibkorange, very thick] (opaque-option.north) -- ++(0, 0.4) -| (coap-option-t.south);
+        \draw[->, color=uibkorange, very thick] (coap-option-t.north) -- (coap-option.south);
+    \end{tikzpicture}
+    \caption{Hierarchie der CoAP-Optionen im Code}
+    \label{fig:hierarchie-der-coap-optionen-im-code}
+\end{figure}
+
+Die oberste Basisklasse \mintinline{csharp}{CoapOption}, von der alle CoAP-Optionen erben, beinhaltet alle Basisfunktionalitäten einer Option, wie sie im RFC 7252 von \citeauthor{RFC7252} definiert ist. Als Nächstes gibt, es die Basisklasse \mintinline{csharp}{CoapOption<T>} die den Wert der Option mit dem Typ T hält. T kann hierbei ein beliebiger Datentyp oder Klasse sein.
+
+Für die im RFC 7252 von \citeauthor{RFC7252} definierten, möglichen Werte die eine CoAP-Option besitzen kann, also \textit{string}, \textit{unsigned integer} oder \textit{opaque}, gibt es die jeweilige dazugehörige Basisklasse:
+
+\begin{itemize}
+    \item StringOption: Für CoAP-Optionen mit den Datentyp \mintinline{csharp}{string} als Wert. Das bedeutet StringOption erbt von der Basisklasse \mintinline{csharp}{CoapOption<string>}.
+    \item UIntOption: Für CoAP-Optionen mit den Datentyp \mintinline{csharp}{uint} als Wert. Das bedeutet UIntOption erbt von der Basisklasse \mintinline{csharp}{CoapOption<uint>}.
+    \item OpaqueOption: Für CoAP-Optionen mit einem Byte-Array als Wert. Das bedeutet OpaqueOption erbt von der Basisklasse \mintinline{csharp}{CoapOption<ReadonlyMemory<byte>>}.
+\end{itemize}
+
+Die konkrete Implementation der einzelnen CoAP-Optionen erben von einer der drei zuvor genannten Basisklassen. Das folgende Codebeispiel X zeigt dies beispielsweise anhand der Optionen-Klasse UriHost.
+
+Mit dieser Struktur können einfach neue CoAP-Optionen in den Programmfluss eingebunden werden, in dem man die entsprechenden Basisklassen implementiert. Diese Struktur erleichtert auch das Lesen und Schreiben von Optionen, in dem der OptionReader und OptionWriter auf die Basisklasse \mintinline{csharp}{CoapOption} oder \mintinline{csharp}{CoapOption<T>} berufen.
+
+Für das Lesen von Optionen wird das Fabrik-Modell (Factory-Pattern) verwendet, um Optionen anhand der gelesenen Daten zu erstellen. Diese Fabriken werden durch das Interface IOptionFactory definiert, das die Nummer der Option und eine Methode Create enthält. Dadurch kann der OptionReader die Daten lesen, die passende Fabrik über die Nummer aussuchen und durch die Create-Methode die Option erstellen.
+
+Für das Schreiben von Optionen wird ein ähnliches Modell verfolgt, wie zuvor beschrieben beim Lesen von Optionen. Hierbei verwendet der OptionWriter eine Kollektion von IOptionSerializer, die eine Instanz von CoapOption in Bytes, mittels der Methode Serialize, umwandelt.
+
+\subsubsection{CoAP Code}
+\label{subsubsec:coap-code}
+
+Die Struktur von CoAP Codes ähnelt dem vorher im Kapitel \ref{subsubsec:parsen-von-optionen} beschriebenen Konstrukt der CoAP Optionen und wird durch das Bild \ref{fig:hierarchie-der-coap-codes} veranschaulicht. Alle CoAP Codes erben von der Basisklasse \mintinline{csharp}{CoapCode}, die grundlegende Eigenschaften wie den Class- und Detail-Bestandteil des CoAP Codes beinhalten. Hier spaltet sich die Struktur in die Klassen \mintinline{csharp}{RequestCode} und \mintinline{csharp}{ResponseCode} auf, die jeweils CoAP-Nachrichten in Anfragen (Requests) und Antworten (Responses) unterteilt.
+
+Request Codes im CoAP-Kontext bestehen zu einem Großteil aus den sogenannten Method Codes - sprich GET, POST, PUT und DELETE. CoAP Codes mit einem \textit{Class}-Wert von 0 entsprechen einem Request. Hier stellt mit einer \textit{Empty Message}, 0.00 als Code definiert, ein Sonderfall dar. Eine Empty Message markiert hierbei eine CoAP-Nachricht jedoch nicht als Request oder Response, sondern als Nachricht, die folgende Eigenschaften besitzt:
+\begin{itemize}
+    \item Der Code ist 0.00.
+    \item Die Tokenlänge ist auf 0 gesetzt.
+    \item Die CoAP-Nachricht darf keine Bytes nach dem \textit{Message ID}-Feld besitzen. 
+\end{itemize}
+
+Response Codes können in Client Response Codes (4.XX), Server Response Codes (5.XX) und Successful Response Codes (2.XX) unterteilt werden. Dabei stellen die jeweiligen Unterkategorien, wie ihre Namen schon angeben, einen Response Code für eine jeweilige Komponente dar.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[squarednode/.style={rectangle, draw=uibkblue!60, fill=uibkgraym!5, very thick, minimum size=5mm}]
+        \node[squarednode] (coap-code) {CoapCode};
+        \node[squarednode] (request-code) [below left=of coap-code]{RequestCode};
+        \node[squarednode] (empty-code) [below=of coap-option] {EmptyCode};
+        \node[squarednode] (response-code) [right=2 of empty-code] {ResponseCode};
+        \node[squarednode] (method-code) [below=of request-code] {MethodCode};
+        
+        \node[squarednode] (client-response-code) [below left=of response-code] {ClientResponseCode};
+        \node[squarednode] (server-response-code) [below=of response-code] {ServerResponseCode};
+        \node[squarednode] (successful-response-code) [below right=of response-code] {SuccessfulResponseCode};
+
+        \draw[->, color=uibkorange, very thick] (request-code.north) -- ++(0, 0.5) -| (coap-code.south);
+        \draw[->, color=uibkorange, very thick] (empty-code.north) -- (coap-code.south);
+        \draw[->, color=uibkorange, very thick] (response-code.north) -- ++(0, 0.5) -| (coap-code.south);
+        \draw[->, color=uibkorange, very thick] (method-code.north) -- (request-code.south);
+        \draw[->, color=uibkorange, very thick] (server-response-code.north) -- (response-code.south);
+        \draw[->, color=uibkorange, very thick] (client-response-code.north) -- ++(0, 0.5) -| (response-code.south);
+        \draw[->, color=uibkorange, very thick] (successful-response-code.north) -- ++(0, 0.5) -| (response-code.south);
+    \end{tikzpicture}
+    \caption{Hierarchie der CoAP-Codes}
+    \label{fig:hierarchie-der-coap-codes}
+\end{figure}

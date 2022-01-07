@@ -30,7 +30,7 @@ Die Ergebnisse werden dabei in verschiedene Formate exportiert. Standardmäßig 
 
 In diesem Szenario wird die Verarbeitungszeit der synchronen als auch asynchronen Variante der Serializierungs- bzw. Deserialisierungsmethode gemessen. Dies wird mittels der Bibliothek BenchmarkDotnet\footnote{\href{https://benchmarkdotnet.org/index.html}{https://benchmarkdotnet.org/index.html}} durchgeführt. BenchmarkDotnet ist dabei ein Tool, dass es erlaubt nativ in C\# eine vordefinierte Methode bzw. einen bestimmten Teil eines Programms einem Benchmark zu unterziehen. Somit wird ermittelt, wie sich diese beiden Varianten, unabhängig von Netzwerkgeschwindigkeit, verhalten. Dabei wird sowohl die ermittelte Durchschnittszeit als auch der Speicherverbrauch mittels BenchmarkDotnet gemessen.
 
-Dabei können wir in BenchmarkDotnet mehrere verschiedene Durchläufe konstruieren, die sich in bestimmten Parametern unterscheiden. Um dabei die Länge der CoAP-Nachricht zu variieren, wird die Anzahl der Options und die Länge der Payload verändert. Dabei verändern sich die beiden Parameter in folgenden Schritten: 0, 1000, 100000. Somit sollten folgende Fälle abgedeckt sein:
+Dabei können wir in BenchmarkDotnet mehrere verschiedene Durchläufe konstruieren, die sich in bestimmten Parametern unterscheiden. Um dabei die Länge der CoAP-Nachricht zu variieren, wird die Anzahl der Options und die Länge der Payload verändert. Dabei verändern sich die beiden Parameter in folgenden Schritten: 0, 1024, 4096, 65536, 131072. Somit sollten folgende Fälle abgedeckt sein:
 \begin{itemize}
     \item Eine CoAP-Nachricht nur mit dem Header und dem Token.
     \item Eine CoAP-Nachricht nur mit Options und keiner Payload.
@@ -40,7 +40,7 @@ Dabei können wir in BenchmarkDotnet mehrere verschiedene Durchläufe konstruier
 
 Auch sollte ersichtlich sein, unter welchen Umständen synchron oder asynchron besser abschneidet.
 
-Dabei entspricht ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei folgendermaßen deklariert:
+Dabei entspricht ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei folgendermaßen deklariert: 
 
 \begin{listing}[H]
     \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/benchmark_example.cs}
@@ -66,11 +66,11 @@ Die CoAP-Nachrichten, die für den Benchmark benutzt werden, folgen folgendem Sc
     \item Die Tokenlänge ist bei acht Bytes und wird zufällig generiert.
     \item Der Code ist CREATED (2.01).
     \item Die MessageId wird zufällig generiert.
-    \item Es werden x-mal Options vom Typ UriPath erstellt.
+    \item Es werden x-mal Optionen vom Typ UriPath erstellt.
     \item Die Payload wird zufällig generiert und ist y Bytes lang.
 \end{itemize}
 
-Die CoAP-Nachricht wird für jeden Durchgang neu generiert und jedem einzelnen Benchmark übergeben.
+Diese Nachrichten werden für jeden Durchgang neu generiert und jedem einzelnen Benchmark übergeben.
 
 \subsection{Messaufbau}
 \label{subsec:messaufbau}
@@ -84,7 +84,7 @@ Für das Szenario der Serialisierung und Deserialisierung werden keine spezielle
 \subsection{Messergebnisse (Nachrichtenübertragung)}
 \label{subsec:messergebnisse-nachrichtenuebertragung}
 
-Für die Nachrichtenübertragung wurde die Anzahl der Options auf 100 und die Größe der Payload auf 100000 limitiert. Größere Werte haben keine bemerkenswerte Erkenntnis gebracht und wurde zwecks Übersichtlichkeit weggelassen.
+Für die Nachrichtenübertragung wurde die Anzahl der Optionen auf 100 und die Größe der Payload auf 100000 limitiert. Größere Werte haben keine bemerkenswerte Erkenntnis gebracht und wurde zwecks Übersichtlichkeit weggelassen.
 
 \begin{table}[h]
     \resizebox{\textwidth}{!}{%
@@ -130,128 +130,95 @@ Damit ist die synchrone Übertragung um 100 Millisekunden schneller als die asyn
     \label{tab:synchrone-uebertragung-100-100}
 \end{table}
 
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lll@{}}
-    \toprule
-    Start                             & Ende                              & Laufzeit         \\ \midrule
-    2021-11-11T11:53:36.3360380+01:00 & 2021-11-11T11:59:17.2094861+01:00 & 00:05:40.8734481 \\
-    2021-11-11T11:25:13.6291350+01:00 & 2021-11-11T11:30:54.8399509+01:00 & 00:05:41.2108159 \\
-    2021-11-11T11:29:42.9196146+01:00 & 2021-11-11T11:35:24.2404882+01:00 & 00:05:41.3208736 \\
-    2021-11-11T11:32:06.6750943+01:00 & 2021-11-11T11:37:47.7269970+01:00 & 00:05:41.0519027 \\
-    2021-11-11T11:33:33.8796230+01:00 & 2021-11-11T11:39:14.4538810+01:00 & 00:05:40.5742580 \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Asynchrone Übertragung mit 100 Options und mit einer Payload von 1000 Bytes}
-    \label{tab:asynchrone-uebertragung-100-1000}
-\end{table}
-
 Entnimmt man die Messdaten aus der Tabelle \ref{tab:asynchrone-uebertragung-100-1000}, die einen Messdurchlauf für eine asynchrone Übertragung einer CoAP-Nachricht mit 100 Options und einer Payload von 1000 Bytes darstellt, ergibt sich eine durchschnittliche Laufzeit von 341,01 Sekunden.
 
 Für eine synchrone Übertragung derselben Nachricht, Messdaten aus Tabelle \ref{tab:synchrone-uebertragung-100-1000} entnommen, ergibt sich eine durchschnittliche Laufzeit von 341,00 Sekunden. Damit beträgt der Abstand zwischen synchron und asynchron nur 10 Millisekunden.
 
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lll@{}}
-    \toprule
-    Start                             & Ende                              & Laufzeit         \\ \midrule
-    2021-11-11T11:53:36.3360380+01:00 & 2021-11-11T11:59:17.2084637+01:00 & 00:05:40.8724257 \\
-    2021-11-11T11:25:13.6291344+01:00 & 2021-11-11T11:30:54.8195384+01:00 & 00:05:41.1904040 \\
-    2021-11-11T11:29:42.9196145+01:00 & 2021-11-11T11:35:24.2416850+01:00 & 00:05:41.3220705 \\
-    2021-11-11T11:32:06.6750956+01:00 & 2021-11-11T11:37:47.7273639+01:00 & 00:05:41.0522683 \\
-    2021-11-11T11:33:33.8796186+01:00 & 2021-11-11T11:39:14.4542465+01:00 & 00:05:40.5746279 \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Synchrone Übertragung mit 100 Options und mit einer Payload von 1000 Bytes}
-    \label{tab:synchrone-uebertragung-100-1000}
-\end{table}
-
 Erhöht man die Payload auf 10000 Bytes, ergibt sich für eine asynchrone Übertragung eine durchschnittliche Laufzeit von 2688,88 Sekunden und für eine synchrone Übertragung eine durchschnittliche Laufzeit von 2688,95 Sekunden. Die jeweiligen Daten wurden dabei von den Tabellen \ref{tab:asynchrone-uebertragung-100-10000} und \ref{tab:synchrone-uebertragung-100-10000} entnommen. Damit erhöht sich der Abstand auf 70 Millisekunden, das den Trend entspricht, dass mit steigender Payloadgröße, der Vorteil der Asynchronität tragender wird.
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lll@{}}
-    \toprule
-    Start                             & Ende                              & Laufzeit         \\ \midrule
-    2021-11-11T11:44:51.4637384+01:00 & 2021-11-11T12:29:39.2904876+01:00 & 00:44:47.8267492 \\
-    2021-11-11T11:45:48.8515388+01:00 & 2021-11-11T12:30:46.9714652+01:00 & 00:44:58.1199264 \\
-    2021-11-11T11:46:46.0080509+01:00 & 2021-11-11T12:31:33.3480246+01:00 & 00:44:47.3399737 \\
-    2021-11-11T11:47:52.2395272+01:00 & 2021-11-11T12:32:38.3763629+01:00 & 00:44:46.1368357 \\
-    2021-11-11T11:49:06.5417421+01:00 & 2021-11-11T12:33:51.5103142+01:00 & 00:44:44.9685721 \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Asynchrone Übertragung mit 100 Options und einer Payload von 10000 Bytes}
-    \label{tab:asynchrone-uebertragung-100-10000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lll@{}}
-    \toprule
-    Start                             & Ende                              & Laufzeit         \\ \midrule
-    2021-11-11T11:44:51.4637476+01:00 & 2021-11-11T12:29:39.6267910+01:00 & 00:44:48.1630434 \\
-    2021-11-11T11:45:48.8515384+01:00 & 2021-11-11T12:30:46.9709319+01:00 & 00:44:58.1193935 \\
-    2021-11-11T11:46:46.0080501+01:00 & 2021-11-11T12:31:33.3486035+01:00 & 00:44:47.3405534 \\
-    2021-11-11T11:47:52.2395282+01:00 & 2021-11-11T12:32:38.3767620+01:00 & 00:44:46.1372338 \\
-    2021-11-11T11:49:06.5417372+01:00 & 2021-11-11T12:33:51.5109177+01:00 & 00:44:44.9691805 \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Synchrone Übertragung mit 100 Options und mit einer Payload von 10000 Bytes}
-    \label{tab:synchrone-uebertragung-100-10000}
-\end{table}
 
 \subsection{Messergebnisse (Deserialisierung und Serialisierung)}
 \label{subsec:messergebnisse-deserialisierung-serialisierung}
 
-Die nachfolgenden Ergebnisse spiegeln die Ergebnisse der jeweiligen synchronen und asynchronen Deserialisierungs- und Serialisierungs-Methoden wieder. Dabei wurde BenchmarkDotnet verwendet, um diese vier Methoden zu testen.
-
-Die angeführten Tabellen sind die Ergebnisse die durch BenchmarkDotnet ermittelt worden sind. Dabei ergibt sich folgende Legende:
+Die detaillierten Ergebnisse zu den Messungen der Deserialisierung und Serialisierung sind im Anhang aufgeführt. Nachfolgend werden nur direkte Vergleiche zwischen der synchronen und asynchronen Implementation der jeweiligen Operation vorgenommen und auf diese verwiesen. Durch das Tool BenchmarkDotnet werden die Messergebnisse, die in diesen Tabellen aufgeführt sind, ermittelt. Dabei ergibt sich folgende Legende für die Messtabellen:
 \begin{itemize}
-    \item Method: Der Name der zu testenden Methode.
-    \item AmountOfOptions: Anzahl der Options (in diesem Fall Options des Typs UriPath).
-    \item LengthOfPayload: Länge der Payload in Bytes.
-    \item Mean: Arithmetisches Mittel aus allen Messungen.
-    \item Error: Die Hälfte des 99,9\%-igen Konfidenzintervalls.
-    \item StdDev: Die Standardabweichung aller Messungen.
-    \item Gen X: Anzahl der Garbage Collector Generation X Sammlungen jede 1000 Operationen.
-    \item Allocated: Größe des verwalteten (\textit{managed}) Speichers.
+    \item $n_{Optionen}$: Anzahl der Optionen.
+    \item $l_{Payload}$: Die Größe bzw. Länge der CoAP-Payload in Bytes.
+    \item $t_{X}$: Die durchschnittliche Laufzeit der Methode X in \mu s.
 \end{itemize}
 
 \begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllll@{}}
+    \centering
+    \begin{tabular}{@{}llll@{}}
     \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error     & StdDev    & Gen 0  & Allocated \\ \midrule
-    SerializeAsync   & 0               & 0               & 5.695 μs & 0.0402 μs & 0.0336 μs & 0.0839 & 376 B     \\
-    Serialize        & 0               & 0               & 5.094 μs & 0.1006 μs & 0.1198 μs & 0.0687 & 288 B     \\
-    DeserializeAsync & 0               & 0               & 2.116 μs & 0.0406 μs & 0.0791 μs & 0.3777 & 1,584 B   \\
-    Deserialize      & 0               & 0               & 1.639 μs & 0.0312 μs & 0.0347 μs & 0.3948 & 1,656 B   \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 0 Options und mit einer Payload von 0 Bytes}
-    \label{tab:benchmark-0-0}
+    $n_{Optionen}$ & $l_{Payload}$ [B] & $t_{DeserializeAsync}$ [\mu s] & $t_{Deserialize}$ [\mu s] \\ \midrule
+    0                   & 0                 & 2.231                          & 1.679                     \\
+    0                   & 1024              & 3.298                          & 3.683                     \\
+    0                   & 4096              & 5.077                          & 6.570                     \\
+    0                   & 65536             & 64.490                         & 98.533                    \\
+    0                   & 131072            & 111.011                        & 175.433                   \\
+    1024                & 0                 & 1440.076                       & 1030.051                  \\
+    1024                & 1024              & 1402.291                       & 1014.093                  \\
+    1024                & 4096              & 1416.083                       & 1027.275                  \\
+    1024                & 65536             & 1592.417                       & 1631.388                  \\
+    1024                & 131072            & 1817.051                       & 1781.418                  \\
+    4096                & 0                 & 8416.154                       & 6477.162                  \\
+    4096                & 1024              & 8147.070                       & 6711.475                  \\
+    4096                & 4096              & 8737.255                       & 6558.996                  \\
+    4096                & 65536             & 9057.536                       & 6924.552                  \\
+    4096                & 131072            & 9543.723                       & 7530.808                  \\
+    65536               & 0                 & 203180.664                     & 166612.138                \\
+    65536               & 1024              & 198211.164                     & 190898.380                \\
+    65536               & 4096              & 201316.657                     & 190316.150                \\
+    65536               & 65536             & 200257.897                     & 195944.825                \\
+    65536               & 131072            & 201631.362                     & 170582.006                \\
+    131072              & 0                 & 372129.381                     & 286105.657                \\
+    131072              & 1024              & 372065.709                     & 285783.220                \\
+    131072              & 4096              & 368936.160                     & 282355.564                \\
+    131072              & 65536             & 366150.575                     & 292059.675                \\
+    131072              & 131072            & 370709.611                     & 304488.343                \\ \bottomrule
+    \end{tabular}%  
+    \caption{Vergleich DeserializeAsync und Deserialize}
+    \label{tab:vergleich-deserialize-async-deserialize}
 \end{table}
-
-Ist nur der Header und der Token in der Nachricht enthalten, wie in Tabelle \ref{tab:benchmark-0-0} zusehen, dann sind sowohl asynchron als auch synchron gleichauf. Der Unterschied in der durchschnittlichen Laufzeit zwischen asynchron und synchron ist dem Overhead der asynchronen Zustandsmaschine, die vom C\#-Compiler generiert wird, geschuldet. Auch der leicht erhöhte Speicherverbrauch lässt sich darauf zurückführen.
 
 \begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllll@{}}
+    \centering
+    \begin{tabular}{@{}llll@{}}
     \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error     & StdDev    & Gen 0  & Allocated \\ \midrule
-    SerializeAsync   & 0               & 1000            & 5.914 μs & 0.0909 μs & 0.0805 μs & 0.0839 & 376 B     \\
-    Serialize        & 0               & 1000            & 6.207 μs & 0.1199 μs & 0.1177 μs & 0.3128 & 1,312 B   \\
-    DeserializeAsync & 0               & 1000            & 3.284 μs & 0.0636 μs & 0.0732 μs & 0.9232 & 3,824 B   \\
-    Deserialize      & 0               & 1000            & 3.261 μs & 0.0631 μs & 0.0727 μs & 0.9308 & 3,864 B   \\ \bottomrule
+    $n_{Optionen}$ & $l_{Payload}$ [B] & $t_{SerializeAsync}$ [\mu s]& $t_{Serialize}$ [\mu s] \\ \midrule
+    0                   & 0                     & 5.618                                           & 5.142                                      \\
+    0                   & 1024                  & 5.658                                           & 5.867                                      \\
+    0                   & 4096                  & 5.710                                           & 7.186                                      \\
+    0                   & 65536                 & 7.356                                           & 23.527                                     \\
+    0                   & 131072                & 9.347                                           & 49.680                                     \\
+    1024                & 0                     & 857.681                                         & 551.922                                    \\
+    1024                & 1024                  & 864.956                                         & 569.763                                    \\
+    1024                & 4096                  & 874.255                                         & 570.333                                    \\
+    1024                & 65536                 & 853.992                                         & 563.479                                    \\
+    1024                & 131072                & 878.702                                         & 594.334                                    \\
+    4096                & 0                     & 3415.820                                        & 2758.439                                   \\
+    4096                & 1024                  & 3520.379                                        & 2659.178                                   \\
+    4096                & 4096                  & 3415.203                                        & 2596.436                                   \\
+    4096                & 65536                 & 3517.490                                        & 2507.161                                   \\
+    4096                & 131072                & 3533.880                                        & 2559.126                                   \\
+    65536               & 0                     & 57919.596                                       & 58896.194                                  \\
+    65536               & 1024                  & 55995.639                                       & 58689.037                                  \\
+    65536               & 4096                  & 54769.243                                       & 58655.719                                  \\
+    65536               & 65536                 & 56494.925                                       & 59328.566                                  \\
+    65536               & 131072                & 56286.964                                       & 57420.750                                  \\
+    131072              & 0                     & 112894.956                                      & 117807.577                                 \\
+    131072              & 1024                  & 110892.868                                      & 119120.364                                 \\
+    131072              & 4096                  & 109851.123                                      & 120061.250                                 \\
+    131072              & 65536                 & 111436.460                                      & 120002.202                                 \\
+    131072              & 131072                & 112449.316                                      & 120453.645                                 \\ \bottomrule
     \end{tabular}%
-    }
-    \caption{Benchmark mit 0 Options und mit einer Payload von 1000 Bytes}
-    \label{tab:benchmark-0-1000}
+    \caption{Vergleich SerializeAsync und Serialize}
+    \label{tab:vergleich-serialize-async-serialize}
 \end{table}
 
-Vergrößert man jedoch die Größe der Payload, wie in Tabelle \ref{tab:benchmark-0-1000} ersichtlich, zeigt sich, dass der Abstand geringer wird. Auch ist anzumerken, dass \textit{SerializeAsync} nun schneller ist als \textit{Serialize}. Waren es zuvor 0,6 Sekunden Unterschied zwischen \textit{Serialize} und \textit{SerializeAsync}, sind es nun 0,293 Sekunden. Bei \textit{Deserialize} und \textit{DeserializeAsync} betrug die Zeitdifferenz noch 0,477 Sekunden, verringert sich diese Differenz bei diesem Durchlauf auf 0,023 Sekunden.
+Wie in Tabelle \ref{tab:vergleich-deserialize-async-deserialize} ersichtlich, arbeitet die DeserializeAsync-Methode immer schneller, als ihr synchroner Gegenpart, solange keine CoAP-Optionen sich in der CoAP-Nachricht befinden. Sobald sich dies jedoch ändert, ist der Mehraufwand für den Aufbau und Verwaltung der asynchronen Zustandsmaschine nachteilig für die asynchrone Methode. Dies lässt sich dadurch erklären, dass die Größe der Optionen zu klein ist, um von der asynchronen Verarbeitung, mit ihren effizienteren Prozessen, zu profitieren.
 
-Der Speicherverbrauch blieb bei \textit{SerializeAsync} unverändert, im Gegensatz zu \textit{Serialize} mit einer Zunahme des allokierten Speichers um 1024 Bytes. Bei beiden Methoden für das Serialisieren von CoAP-Nachrichten hat sich der Speicherverbrauch zwar auch erhöht, jedoch blieb der Abstand zueinander unverändert.
+Vergrößert man jedoch die Größe der Payload, dann profitiert der Deserialisierungsvorgang von der angebotenen Asynchronität. Obwohl sich der Unterschied in einigen 100 Mikrosekunden bewegt, kann es bei steigender Anzahl gleichzeitig eintreffender Nachrichten eine merkbare Auswirkung haben, da bei schnellerer Verarbeitung, auch schneller die nächste Nachricht abgearbeitet werden kann.
 
 Eine mögliche Erklärung für den gleichbleibenden Speicherverbrauch von \textit{SerializeAsync} ist, dass dieser mittels eines \textit{Stream} arbeitet, der fortlaufend beschrieben wird. Im Gegensatz dazu verwendet \textit{Serialize} intern einen die \textit{PooledMemoryBufferWriter}-Klasse. Dieser stellt Methoden bereit, um auf einem Puffer, bestehend aus einer Menge von \mintinline{csharp}{Memory<byte>}s, zu schreiben. Dabei muss der Aufrufer nur Speicher vom \textit{PooledMemoryBufferWriter} \textit{"ausleihen"}, diesen mit den gewünschten Daten beschreiben und dem \textit{PooledMemoryBufferWriter} die Anzahl der geschriebenen Bytes mitteilen, damit die Position des \textit{PooledMemoryBufferWriter}s weitergeschoben werden kann. Dies wird im Codebeispiel \ref{listing:verwendung-des-pooled-memory-buffer-writers} veranschaulicht.
 
@@ -262,21 +229,6 @@ Eine mögliche Erklärung für den gleichbleibenden Speicherverbrauch von \texti
 \end{listing}
 
 Der Nachteil des \textit{PooledMemoryBufferWriter}s ist, dass dieser seinen zur Verfügung stehenden Speicherbereich vergrößern muss, wenn die Kapazität erschöpft ist. Dabei vergrößert sich dieser so weit, damit der Puffer die zu schreibenden Daten aufnehmen kann. Auch ist der \textit{PooledMemoryBufferWriter} eine Eigenimplementierung, jedoch wurde im Laufe der Recherchen für diese Arbeit eine ähnliche Implementation von Microsoft\footnote{\href{https://docs.microsoft.com/en-us/dotnet/api/microsoft.toolkit.highperformance.buffers.memorybufferwriter-1?view=win-comm-toolkit-dotnet-7.0}{Dokumentation des MemoryBufferWriter}} gefunden, die dieses Problem möglicherweise besser handhabt, als die derzeitige Implementation. Da dies jedoch einen zu großen Aufwand darstellt, wurde darauf verzichtet.
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error     & StdDev    & Gen 0   & Gen 1   & Gen 2   & Allocated \\ \midrule
-    SerializeAsync   & 0               & 100000          & 8.611 μs   & 0.1519 μs & 0.1268 μs & 0.0763  & -       & -       & 376 B     \\
-    Serialize        & 0               & 100000          & 84.259 μs  & 1.1186 μs & 1.0464 μs & 31.1279 & 31.1279 & 31.1279 & 100,312 B \\
-    DeserializeAsync & 0               & 100000          & 57.500 μs  & 1.1007 μs & 1.2675 μs & 83.3130 & 83.3130 & 83.3130 & 264,040 B \\
-    Deserialize      & 0               & 100000          & 107.972 μs & 1.3266 μs & 1.1078 μs & 83.2520 & 83.2520 & 83.2520 & 263,984 B \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 0 Options und mit einer Payload von 100000 Bytes}
-    \label{tab:benchmark-0-100000}
-\end{table}
 
 Wird die Payload weiter vergrößert, in diesem Fall auf 100000 Bytes (100 kB), sieht man, dass die asynchronen Methoden deutlich schneller sind als die synchronen Methoden. Dies resultiert darin, dass bei I/O-lastigen Aufgaben, in diesem Fall das Lesen bzw. Schreiben der Payload vom bzw. auf den \mintinline{csharp}{Stream} oder dem \mintinline{csharp}{ReadonlyMemory<byte>}, die Asynchronität ihre Vorteile ausspielen kann, da eine große Menge an Daten gelesen oder geschrieben wird. Andere I/O-lastige Aufgaben sind etwa die Übertragung von Daten über das Netzwerk oder jeglicher Zugriff auf das Filesystem. Es wird dabei asynchron die Daten vom jeweiligen Stream gelesen (siehe Codebeispiel \ref{listing:asynchrones-auslesen-eines-streams-mit-ibufferwriter}) bzw. auf den jeweiligen Stream geschrieben (siehe Codebeispiel \ref{listing:asynchrones-beschreiben-eines-streams}).
 
@@ -292,37 +244,7 @@ Wird die Payload weiter vergrößert, in diesem Fall auf 100000 Bytes (100 kB), 
     \label{listing:asynchrones-beschreiben-eines-streams}
 \end{listing}
 
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 0               & 2,191.0 μs & 42.42 μs & 56.63 μs & 1316.4063 & -       & 5,383 KB  \\
-    Serialize        & 1000            & 0               & 325.0 μs   & 3.36 μs  & 2.98 μs  & 39.0625   & -       & 160 KB    \\
-    DeserializeAsync & 1000            & 0               & 950.3 μs   & 11.10 μs & 9.84 μs  & 122.0703  & 37.1094 & 526 KB    \\
-    Deserialize      & 1000            & 0               & 645.3 μs   & 12.27 μs & 12.05 μs & 74.2188   & 24.4141 & 323 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 0 Bytes, jedoch mit StreamWriter}
-    \label{tab:benchmark-1000-0-streamwriter}
-\end{table}
-
 Sobald sich jedoch die Anzahl der Options erhöht, sinkt die durchschnittliche Laufzeit der asynchronen Methoden und der Abstand zu den synchronen Methoden vergrößert sich (siehe Tabelle \ref{tab:benchmark-1000-0-streamwriter}). Hierbei steigt die Laufzeit von \textit{SerializeAsync} auf 2191 Sekunden und der Speicherverbrauch auf 5,383 KB. Im Gegensatz dazu schneidet \textit{Serialize} mit 325 Sekunden und einem Speicherverbrauch von 160 KB deutlich besser ab. Da dies eine ungewöhnliche Abweichung darstellt, wurde nachgeforscht und der Grund für die Verlangsamung von \textit{SerializeAsync} gefunden: Um Options, die einen \textit{string} als Wert besitzen, auf einen Stream zu schreiben, wurde die \textit{StreamWriter}-Klasse verwendet. Diese ermöglicht es, mit einer bestimmten Zeichenkodierung auf einen \textit{Stream} zu schreiben (siehe Codebeispiel \ref{listing:asynchrones-schreiben-eines-strings-auf-einen-stream-streamwriter}).
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error    & StdDev   & Gen 0    & Gen 1   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 0               & 740.2 μs & 14.14 μs & 15.72 μs & 50.7813  & -       & 211 KB    \\
-    Serialize        & 1000            & 0               & 330.7 μs & 6.57 μs  & 5.82 μs  & 39.0625  & -       & 160 KB    \\
-    DeserializeAsync & 1000            & 0               & 952.6 μs & 16.95 μs & 15.03 μs & 121.0938 & 40.0391 & 526 KB    \\
-    Deserialize      & 1000            & 0               & 591.0 μs & 8.91 μs  & 8.33 μs  & 74.2188  & 24.4141 & 323 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 0 Bytes, jedoch ohne StreamWriter.}
-    \label{tab:benchmark-1000-0-ohne-streamwriter}
-\end{table}
 
 Verwendet man jedoch die angebotenen Schreibmethoden von der \textit{Stream}-Klasse, indem man zuvor den String durch die entsprechende Zeichenkodierung in \textit{bytes} umwandeln lässt (siehe Codebeispiel \ref{listing:asynchrones-schreiben-eines-strings-auf-einen-stream}), verringert sich die durchschnittliche Laufzeit und auch der Speicherverbrauch (siehe Tabelle \ref{tab:benchmark-1000-0-ohne-streamwriter}).
 
@@ -342,111 +264,94 @@ Die nachfolgenden Messungen wurden ohne die Nutzung des \textit{StreamWriter}s d
     \label{listing:asynchrones-schreiben-eines-strings-auf-einen-stream}
 \end{listing}
 
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error    & StdDev   & Gen 0    & Gen 1   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 1000            & 715.4 μs & 14.28 μs & 15.87 μs & 50.7813  & -       & 211 KB    \\
-    Serialize        & 1000            & 1000            & 315.6 μs & 1.90 μs  & 1.78 μs  & 39.0625  & -       & 161 KB    \\
-    DeserializeAsync & 1000            & 1000            & 923.6 μs & 6.20 μs  & 5.18 μs  & 121.0938 & 41.0156 & 529 KB    \\
-    Deserialize      & 1000            & 1000            & 593.0 μs & 5.02 μs  & 4.45 μs  & 75.1953  & 15.6250 & 326 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 1000 Bytes}
-    \label{tab:benchmark-1000-1000}
-\end{table}
-
 Ab dem Zeitpunkt, in dem sich eine größere Anzahl an Options in der CoAP-Nachricht befinden, können die asynchronen Methoden ihren Geschwindigkeitsvorteil vom Szenario, in dem nur eine Payload mit weniger als 100000 Bytes (100 KB) gegeben war (siehe Tabellen \ref{tab:benchmark-0-0}, \ref{tab:benchmark-0-1000} und \ref{tab:benchmark-0-100000}), nicht mehr ausspielen. Dies ist darauf zurückzuführen, dass bei kleineren Datenmengen der Overhead, der durch die asynchrone Zustandsmaschine erzeugt wird, zu stark überwiegt. Deshalb werden auf die Ergebnisse, visualisiert durch die Tabellen \ref{tab:benchmark-1000-100000} bis \ref{tab:benchmark-100000-100000}, nicht näher eingegangen.
 
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0    & Gen 1   & Gen 2   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 100000          & 721.9 μs   & 13.99 μs & 24.86 μs & 50.7813  & -       & -       & 211 KB    \\
-    Serialize        & 1000            & 100000          & 368.6 μs   & 6.78 μs  & 6.34 μs  & 64.4531  & 32.2266 & 32.2266 & 258 KB    \\
-    DeserializeAsync & 1000            & 100000          & 1,047.4 μs & 13.92 μs & 12.34 μs & 164.0625 & 82.0313 & 82.0313 & 783 KB    \\
-    Deserialize      & 1000            & 100000          & 767.0 μs   & 15.31 μs & 16.38 μs & 83.0078  & 83.0078 & 83.0078 & 580 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 100000 Bytes}
-    \label{tab:benchmark-1000-100000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0     & Gen 1     & Gen 2     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 0               & 68.01 ms  & 0.651 ms & 0.609 ms & 5125.0000 & -         & -         & 21 MB     \\
-    Serialize        & 100000          & 0               & 30.87 ms  & 0.320 ms & 0.283 ms & 3843.7500 & 31.2500   & 31.2500   & 16 MB     \\
-    DeserializeAsync & 100000          & 0               & 144.43 ms & 2.678 ms & 2.505 ms & 8500.0000 & 3250.0000 & 1000.0000 & 50 MB     \\
-    Deserialize      & 100000          & 0               & 116.40 ms & 2.222 ms & 5.281 ms & 5400.0000 & 2000.0000 & 800.0000  & 32 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 0 Bytes}
-    \label{tab:benchmark-100000-0}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0     & Gen 1     & Gen 2     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 1000            & 69.35 ms  & 0.878 ms & 0.778 ms & 5125.0000 & -         & -         & 21 MB     \\
-    Serialize        & 100000          & 1000            & 31.50 ms  & 0.406 ms & 0.339 ms & 3843.7500 & 31.2500   & 31.2500   & 16 MB     \\
-    DeserializeAsync & 100000          & 1000            & 152.99 ms & 3.035 ms & 7.154 ms & 8500.0000 & 3250.0000 & 1000.0000 & 50 MB     \\
-    Deserialize      & 100000          & 1000            & 110.34 ms & 2.188 ms & 4.320 ms & 5800.0000 & 2400.0000 & 1000.0000 & 32 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und 1000 Bytes}
-    \label{tab:benchmark-100000-1000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev    & Gen 0     & Gen 1     & Gen 2     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 100000          & 69.25 ms  & 0.458 ms & 0.383 ms  & 5125.0000 & -         & -         & 21 MB     \\
-    Serialize        & 100000          & 100000          & 32.23 ms  & 0.619 ms & 0.826 ms  & 3843.7500 & 31.2500   & 31.2500   & 16 MB     \\
-    DeserializeAsync & 100000          & 100000          & 166.15 ms & 4.591 ms & 13.391 ms & 8750.0000 & 3250.0000 & 1000.0000 & 50 MB     \\
-    Deserialize      & 100000          & 100000          & 113.15 ms & 2.256 ms & 6.545 ms  & 5400.0000 & 2000.0000 & 800.0000  & 32 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 100000 Bytes (100 KB)}
-    \label{tab:benchmark-100000-100000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0     & Gen 1     & Gen 2    & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 1000000         & 69.00 ms  & 1.069 ms & 0.948 ms & 5125.0000 & -         & -        & 21 MB     \\
-    Serialize        & 100000          & 1000000         & 34.34 ms  & 0.407 ms & 0.361 ms & 4062.5000 & 250.0000  & 250.0000 & 19 MB     \\
-    DeserializeAsync & 100000          & 1000000         & 140.89 ms & 1.490 ms & 1.394 ms & 8500.0000 & 3250.0000 & 750.0000 & 52 MB     \\
-    Deserialize      & 100000          & 1000000         & 102.68 ms & 2.028 ms & 2.082 ms & 5400.0000 & 2000.0000 & 800.0000 & 34 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 1000000 Bytes (100 MB)}
-    \label{tab:benchmark-100000-1000000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 1000000000      & 158.1 ms   & 3.13 ms  & 5.06 ms  & 5000.0000 & -         & 21 MB     \\
-    Serialize        & 100000          & 1000000000      & 1,112.3 ms & 21.24 ms & 25.29 ms & 3000.0000 & -         & 3,016 MB  \\
-    DeserializeAsync & 100000          & 1000000000      & 1,507.7 ms & 28.40 ms & 29.16 ms & 7000.0000 & 2000.0000 & 4,003 MB  \\
-    Deserialize      & 100000          & 1000000000      & 1,764.1 ms & 34.93 ms & 52.28 ms & 4000.0000 & 1000.0000 & 2,893 MB  \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 1000000000 Bytes (1 GB)}
-    \label{tab:benchmark-100000-1000000000}
-\end{table}
-
 Vergrößert man jedoch die Größe der Payload über 100 MB (in Tabelle \ref{tab:benchmark-100000-1000000000} auf 1 GB), wird der Abstand zwischen \textit{Serialize} und \textit{SerializeAsync} sowohl im Hinblick auf die durchschnittliche Laufzeit als auch den Speicherverbrauch deutlich größer. Hierbei ist \textit{SerializeAsync} um den Faktor 7 schneller im Durchschnitt und um den Faktor 143 effizienter im Speicherverbrauch.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ylabel={Laufzeit [\mu s]},
+            ymode=log,
+            grid=both,
+        ]
+        \addplot[
+            only marks,
+        ] table[
+            x expr=\coordindex,
+            col sep=semicolon,
+            y=Mean,
+        ]
+            {measurements/deserialize_result.csv};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Messergebnisse von Deserialize-Methode als Diagramm}
+    \label{fig:messergebnisse-deserialize}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ylabel={Laufzeit [\mu s]},
+            ymode=log,
+            grid=both,
+        ]
+        \addplot[
+            only marks,
+        ] table[
+            x expr=\coordindex,
+            col sep=semicolon,
+            y=Mean,
+        ]
+            {measurements/deserialize_async_result.csv};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Messergebnisse von DeserializeAsync-Methode als Diagramm}
+    \label{fig:messergebnisse-deserialize-async}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ylabel={Laufzeit [\mu s]},
+            ymode=log,
+            grid=both,
+        ]
+        \addplot[
+            only marks,
+        ] table[
+            x expr=\coordindex,
+            col sep=semicolon,
+            y=Mean,
+        ]
+            {measurements/serialize_async_result.csv};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Messergebnisse von SerializeAsync-Methode als Diagramm}
+    \label{fig:messergebnisse-serialize-async}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ylabel={Laufzeit [\mu s]},
+            ymode=log,
+            grid=both,
+        ]
+        \addplot[
+            only marks,
+        ] table[
+            x expr=\coordindex,
+            col sep=semicolon,
+            y=Mean,
+        ]
+            {measurements/serialize_result.csv};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Messergebnisse von Serialize-Methode als Diagramm}
+    \label{fig:messergebnisse-serialize}
+\end{figure}

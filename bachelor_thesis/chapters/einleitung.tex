@@ -12,6 +12,12 @@ Mit CoAP wurde die Entwicklung eines generischen Webprotokolls für die speziell
     \item Asynchronen Nachrichtenaustausch.
 \end{itemize}
 
+In den, von CoAP angedachten Anwendungsgebieten, in denen eine große Menge an Daten über ein Netzwerk fließen, könnten asynchrone Techniken die passende Ergänzung sein, um eine hohe Anzahl von Nachrichten zu empfangen, zu senden oder zu verarbeiten. Den mit steigender Digitalisierung in privaten als auch geschäftlichem Umfeld, im Form von intelligenter Haussteuerung, effizienter Nutzung von Energieerzeugern und Energieverbrauchern\footnote{\href{https://www.a1energysolutions.at/smartspeicher/}{SmartSpeicher} - intelligente Warmwasserspeicher zur Stabilisierung des Stromnetzes}, steigt auch der Bedarf an leistungsfähigen Anwendungen, die diese schnell anwachsende Anzahl an IoT-Geräten ressourcenschonend und effizient verwalten kann. 
+
+Jedoch eignet sich Asynchronität nicht nur zur Optimierung von Anwendungen im IoT-Bereich, sondern auch für solche mit einer grafischen Programmoberfläche (GUI). Dies hat denjenigen Grund, da der für das Zeichnen der Oberfläche verantwortliche Thread freibleibt und somit neu ankommende Eingaben des Benutzers (Mausklick, Tastatureingabe etc.) verarbeiten kann, ohne das die Oberfläche "einfriert"\footnote{Beschreibung des Zustandes eines Programmes, indem die Oberfläche keine neuen Eingaben entgegennimmt}.
+
+Dieses Programmierparadigma ist auch nützlich, wenn mit Datenbanken oder REST-Schnittstellen interagiert oder I/O- bzw. CPU-intensive Operationen ausgeführt werden, wie \citeauthor{okur2014study} in deren Studie \citetitle{okur2014study} \autocite{okur2014study} herausgefunden haben.
+
 \subsection{Constrained Application Protocol (CoAP)}
 \label{subsec:constrained-application-protocol}
 
@@ -395,15 +401,33 @@ Die bekannteste Implementierung ist hierbei Californium für Java. Es wird von d
 \subsubsection{CoAP.NET}
 \label{subsubsec:coap-net}
 
-CoAP.NET implementiert das Constrained Application Protocol in C\# und wurde von der Organisation \textit{smeshlink} bis Juli 2016 entwickelt. Es ist ein C\#-Port der CoAP-Implementation für Java \textit{Californium}, jedoch ist es zurzeit unbetreut. Auch eine vollständige Unterstützung von asynchronen Techniken ist nicht in CoAP.NET gegeben. Dennoch zählt es zu den bekanntesten Implementationen im C\#-Umfeld und wird auch in der Softwareentwicklungsfirma \textit{World-Direct eBusiness solutions GmbH} verwendet. Da diese Bachelorarbeit in Kooperation mit dieser Firma entstanden ist, wurde ein großer Fokus auf CoAP.NET gelegt.
+CoAP.NET implementiert das Constrained Application Protocol in C\# und wurde von der Organisation \textit{smeshlink} bis Juli 2016 entwickelt \autocite{coapnet}. Es ist ein C\#-Port der CoAP-Implementation für Java \textit{Californium}, jedoch ist es zurzeit unbetreut. Auch eine vollständige Unterstützung von asynchronen Techniken ist nicht in CoAP.NET gegeben. Dennoch zählt es zu den bekanntesten Implementationen im C\#-Umfeld und wird auch in der Softwareentwicklungsfirma \textit{World-Direct eBusiness solutions GmbH} verwendet. Da diese Bachelorarbeit in Kooperation mit dieser Firma entstanden ist, wurde ein großer Fokus auf CoAP.NET gelegt.
+
+\subsection{Industrielle Motivation und Alternativen}
+\label{subsec:industrielle-motivation-und-alternativen}
+
+CoAP wird häufig im industriellen Umfeld verwendet, um Applikationen schaffen zu können, die mit eingeschränkten Geräten, wie 8-Bit-Mikrocontroller, über eine einfache, standardisierte Internetschnittstelle kommunizieren können. Somit ermöglicht dies die einfache Integration von IoT-Geräten in bestehende oder neue Softwareapplikationen, um mit diesen Geräten zu interagieren, sie zu verwalten und zu steuern.
+
+Aufgrund dessen, dass das Constrained Application Protocol ein einfaches zu implementierendes Protokoll darstellt und auf simple, leistungsschwache Geräte optimiert ist, im Gegensatz zum weitaus geläufigerem Hypertext Transfer Protocol (HTTP), wird es für viele verschiedene Anwendungsszenarien verwendet. Einige von diesen werden nachfolgend beispielhaft aufgelistet:
+\begin{itemize}
+    \item Hausautomatisierungen, wie von \citeauthor{HomeAutomationUsingCoAP} in deren Arbeit mit dem Titel \citetitle{HomeAutomationUsingCoAP} \autocite{HomeAutomationUsingCoAP} beschrieben.
+    \item Integration von kabellosen Sensoren mittels TinyOS von \citeauthor{TinyCoAP} \autocite{TinyCoAP}.
+    \item Applikation zur Nutzung von integrierten Sensoren in Transportcontainern von \citeauthor{TransportLogisticUsingCoAP} \autocite{TransportLogisticUsingCoAP}.
+\end{itemize}
+
+Der Funktionsumfang von CoAP ist im Vergleich zu HTTP geringer, jedoch ist auch der Verwendungszweck vom Constrained Application Protocol ein anderer wie es bei HTTP der Fall ist. Das Hypertext Transfer Protocol kann universal eingesetzt werden und deckt viele verschiedene Anwendungsarten ab. Es wurde zwar hauptsächlich für die Übertragung von Webseiten über das Internet entwickelt, jedoch lässt es sich für Datenübertragung beliebiger Formate und Dateien einsetzen.
+
+CoAP hat sich über die Jahre weiterentwickelt und neuere Techniken, wie Datenübertragung über TCP, Websockets und TLS \autocite{RFC8323}, als auch neuere Funktionen, wie blockweiser Transfer von Daten \autocite{RFC7959} implementiert. Jedoch bezieht sich diese Arbeit auf die erste Spezifikation von CoAP im Form des RFC 7252 \autocite{RFC7252}, der von \citeauthor{RFC7252} im Jahr \citeyear{RFC7252} definiert wurde.
+
+Auch die Softwareentwicklungsfirma World Direct eBusiness solutions GmbH, der Kooperationspartner für diese Arbeit, verwendet CoAP in diversen Softwareprojekten, um Lösungen im IoT und Energiebereich anbieten zu können. Hier wird das Constrained Application Protocol dazu verwendet, um mit eigens entwickelten Hardwarecontrollern zu kommunizieren, die vor allem im Bereich der Regelenergie\footnote{Die benötigte Energie um die Unter- oder Überproduktion von Strom im Stromnetz auszugleichen.} zum Einsatz kommen.
 
 \subsection{Ziel der Arbeit}
 \label{subsec:ziel-der-arbeit}
 
 Die Forschungsfrage, die diese Bachelorarbeit zu beantworten versucht, lautet: \textit{Hat eine asynchrone Implementation eines Servers Einfluss auf dessen Durchsatzrate?}
 
-Um diese Frage ursprünglich zu beantworten, versuchte man in CoAP.NET eine komplette asynchrone Unterstützung zu implementieren und dann die synchrone Schnittstelle gegen die asynchrone Schnittstelle zu vergleichen. Dies hat sich als nicht rentabel herausgestellt, da zu viele Änderungen an der Codebasis von CoAP.NET vorzunehmen waren und somit auch der Vergleich nicht verhältnismäßig gewesen wäre.
+Als erste Möglichkeit diese Frage zu beantworten, versuchte man für das Open-Source-Projekt CoAP.NET, das die bekannteste Implementierung der CoAP-Spezifikation für C\# darstellt, eine asynchrone Schnittstelle zu implementieren. Diese sollte dann abschließend mit der bereits bestehenden synchronen Schnittstelle verglichen werden, um zu evaluieren, ob hier die implementierte Asynchronität Vorteile bringt. Diese Idee musste jedoch verworfen werden, da zu viele Änderungen an der Codebasis von CoAP.NET notwendig gewesen wären, um das angestrebte Ziel zu erreichen. Dies hätte den zeitlichen Rahmen als auch den Arbeitsaufwand dieser Bachelorarbeit deutlich überschritten.
 
-Darum fiel die Wahl auf eine komplette Neuentwicklung des Constrained Application Protocols in C\# mit modernen Technologien und Patterns. Dabei wurde bei der Entwicklung auf eine synchrone als auch asynchrone Schnittstelle Wert gelegt, um sowohl synchron als auch asynchron zu vergleichen. Somit sollte der Einfluss bewertet und aufgezeigt werden, ob eine asynchrone Implementation eines Servers einen merklichen Einfluss auf dessen Durchsatzrate besitzt.
+Deshalb entschied man sich dies zu umgehen, indem eine komplette Neuentwicklung des Constrained Application Protocols für C\#, mit modernen Technologien und Patterns, entwickelt wurde. Hierbei wurde bei der Entwicklung auf eine synchrone als auch asynchrone Schnittstelle Wert gelegt, um diese miteinander vergleichen zu können. Dadurch sollte ermittelt werden, inwiefern eine asynchrone Implementation eines (CoAP-)Servers einen Einfluss auf dessen Durchsatzrate hat.
 
 Das Resultat dieser Arbeit ist im Github Repository \href{https://github.com/world-direct/CoAP.NET}{world-direct/CoAP.NET} einsehbar.
