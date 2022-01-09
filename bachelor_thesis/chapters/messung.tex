@@ -40,21 +40,9 @@ Dabei können wir in BenchmarkDotnet mehrere verschiedene Durchläufe konstruier
 
 Auch sollte ersichtlich sein, unter welchen Umständen synchron oder asynchron besser abschneidet.
 
-Dabei entspricht ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei folgendermaßen deklariert: 
+Dabei entspricht ein Benchmark eine auszuführende Methode bzw. ein auszuführender Codeteil. Ein Benchmark wird dabei, wie im Codebeispiel \ref{listing:beispiel-eines-benchmarks-in-benchmarkdotnet} dargestellt, implementiert.
 
-\begin{listing}[H]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/benchmark_example.cs}
-    \caption{Beispiel eines Benchmarks in BenchmarkDotnet}
-    \label{listing:beispiel-eines-benchmarks-in-benchmarkdotnet}
-\end{listing}
-
-In der Main-Methode muss diese Klasse nun nur bei BenchmarkDotnet zur Ausführung registriert werden. Dies geschieht folgendermaßen:
-
-\begin{listing}[H]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/execution_of_benchmark.cs}
-    \caption{Ausführen der Benchmark-Klasse}
-    \label{listing:ausfuehren-der-benchmark-klasse}
-\end{listing}
+In der Main-Methode muss diese Klasse nun nur bei BenchmarkDotnet zur Ausführung registriert werden. Dies geschieht, wie im Codebeispiel \ref{listing:ausfuehren-der-benchmark-klasse} ersichtlich ist, über die \mintinline{csharp}{main}-Methode des Benchmark-Programms.
 
 \subsubsection{Nachrichtengenerierung für Benchmark}
 \label{subsubsec:nachrichtengenerierung-fuer-benchmark}
@@ -181,92 +169,17 @@ Die detaillierten Ergebnisse zu den Messungen der Deserialisierung und Serialisi
     \label{tab:vergleich-deserialize-async-deserialize}
 \end{table}
 
-\begin{table}[h]
-    \centering
-    \begin{tabular}{@{}llll@{}}
-    \toprule
-    $n_{Optionen}$ & $l_{Payload}$ [B] & $t_{SerializeAsync}$ [\mu s]& $t_{Serialize}$ [\mu s] \\ \midrule
-    0                   & 0                     & 5.618                                           & 5.142                                      \\
-    0                   & 1024                  & 5.658                                           & 5.867                                      \\
-    0                   & 4096                  & 5.710                                           & 7.186                                      \\
-    0                   & 65536                 & 7.356                                           & 23.527                                     \\
-    0                   & 131072                & 9.347                                           & 49.680                                     \\
-    1024                & 0                     & 857.681                                         & 551.922                                    \\
-    1024                & 1024                  & 864.956                                         & 569.763                                    \\
-    1024                & 4096                  & 874.255                                         & 570.333                                    \\
-    1024                & 65536                 & 853.992                                         & 563.479                                    \\
-    1024                & 131072                & 878.702                                         & 594.334                                    \\
-    4096                & 0                     & 3415.820                                        & 2758.439                                   \\
-    4096                & 1024                  & 3520.379                                        & 2659.178                                   \\
-    4096                & 4096                  & 3415.203                                        & 2596.436                                   \\
-    4096                & 65536                 & 3517.490                                        & 2507.161                                   \\
-    4096                & 131072                & 3533.880                                        & 2559.126                                   \\
-    65536               & 0                     & 57919.596                                       & 58896.194                                  \\
-    65536               & 1024                  & 55995.639                                       & 58689.037                                  \\
-    65536               & 4096                  & 54769.243                                       & 58655.719                                  \\
-    65536               & 65536                 & 56494.925                                       & 59328.566                                  \\
-    65536               & 131072                & 56286.964                                       & 57420.750                                  \\
-    131072              & 0                     & 112894.956                                      & 117807.577                                 \\
-    131072              & 1024                  & 110892.868                                      & 119120.364                                 \\
-    131072              & 4096                  & 109851.123                                      & 120061.250                                 \\
-    131072              & 65536                 & 111436.460                                      & 120002.202                                 \\
-    131072              & 131072                & 112449.316                                      & 120453.645                                 \\ \bottomrule
-    \end{tabular}%
-    \caption{Vergleich SerializeAsync und Serialize}
-    \label{tab:vergleich-serialize-async-serialize}
-\end{table}
-
 Wie in Tabelle \ref{tab:vergleich-deserialize-async-deserialize} ersichtlich, arbeitet die DeserializeAsync-Methode immer schneller, als ihr synchroner Gegenpart, solange keine CoAP-Optionen sich in der CoAP-Nachricht befinden. Sobald sich dies jedoch ändert, ist der Mehraufwand für den Aufbau und Verwaltung der asynchronen Zustandsmaschine nachteilig für die asynchrone Methode. Dies lässt sich dadurch erklären, dass die Größe der Optionen zu klein ist, um von der asynchronen Verarbeitung, mit ihren effizienteren Prozessen, zu profitieren.
 
 Vergrößert man jedoch die Größe der Payload, dann profitiert der Deserialisierungsvorgang von der angebotenen Asynchronität. Obwohl sich der Unterschied in einigen 100 Mikrosekunden bewegt, kann es bei steigender Anzahl gleichzeitig eintreffender Nachrichten eine merkbare Auswirkung haben, da bei schnellerer Verarbeitung, auch schneller die nächste Nachricht abgearbeitet werden kann.
 
-Eine mögliche Erklärung für den gleichbleibenden Speicherverbrauch von \textit{SerializeAsync} ist, dass dieser mittels eines \textit{Stream} arbeitet, der fortlaufend beschrieben wird. Im Gegensatz dazu verwendet \textit{Serialize} intern einen die \textit{PooledMemoryBufferWriter}-Klasse. Dieser stellt Methoden bereit, um auf einem Puffer, bestehend aus einer Menge von \mintinline{csharp}{Memory<byte>}s, zu schreiben. Dabei muss der Aufrufer nur Speicher vom \textit{PooledMemoryBufferWriter} \textit{"ausleihen"}, diesen mit den gewünschten Daten beschreiben und dem \textit{PooledMemoryBufferWriter} die Anzahl der geschriebenen Bytes mitteilen, damit die Position des \textit{PooledMemoryBufferWriter}s weitergeschoben werden kann. Dies wird im Codebeispiel \ref{listing:verwendung-des-pooled-memory-buffer-writers} veranschaulicht.
+Detaillierte Daten können in den Tabellen \ref{tab:benchmark-deserialize} und \ref{tab:benchmark-deserialize-async} im Anhang eingesehen werden. Dort ist erkenntlich, dass der Speicherverbrauch bei der \textit{DeserializeAsync}-Methode mit steigender Größe der Payload gleichbleibenden ist, im Gegensatz zum synchronen Gegenpart.
 
-\begin{listing}[h]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/pooled_memory_buffer_writer_example.cs}
-    \caption{Verwendung des PooledMemoryBufferWriters}
-    \label{listing:verwendung-des-pooled-memory-buffer-writers}
-\end{listing}
+Eine mögliche Erklärung für den gleichbleibenden Speicherverbrauch von \textit{DeserializeAsync} ist, dass dieser mittels eines \textit{Stream} arbeitet, von dem ohne Allokation direkt gelesen werden kann. Im Gegensatz dazu ist es bei \textit{Deserialize} notwendig, die einzeln ausgelesenen Daten in eine Art Zwischenspeicher zu schreiben, um sie verarbeiten zu können. Dies übernimmt dabei die Klasse \textit{PooledMemoryBufferWriter}, die ein gepuffertes Schreiben von Daten auf einen Speicherbereich erlaubt. Dieser Speicherbereich ist dabei durch die Klasse \mintinline{csharp}{Memory<byte>} modelliert. Damit der Aufrufer den \textit{PooledMemoryBufferWriter} beschreiben kann, muss dieser sich Speicher von diesem \textit{"ausleihen"} und anschließend mit den gewünschten Daten beschreiben. Zum Schluss muss dem \textit{PooledMemoryBufferWriter} die Anzahl der geschriebenen Bytes mitgeteilt werden, damit die Position des \textit{PooledMemoryBufferWriter}s weitergeschoben werden kann. Dies wird im Codebeispiel \ref{listing:verwendung-des-pooled-memory-buffer-writers} veranschaulicht.
 
 Der Nachteil des \textit{PooledMemoryBufferWriter}s ist, dass dieser seinen zur Verfügung stehenden Speicherbereich vergrößern muss, wenn die Kapazität erschöpft ist. Dabei vergrößert sich dieser so weit, damit der Puffer die zu schreibenden Daten aufnehmen kann. Auch ist der \textit{PooledMemoryBufferWriter} eine Eigenimplementierung, jedoch wurde im Laufe der Recherchen für diese Arbeit eine ähnliche Implementation von Microsoft\footnote{\href{https://docs.microsoft.com/en-us/dotnet/api/microsoft.toolkit.highperformance.buffers.memorybufferwriter-1?view=win-comm-toolkit-dotnet-7.0}{Dokumentation des MemoryBufferWriter}} gefunden, die dieses Problem möglicherweise besser handhabt, als die derzeitige Implementation. Da dies jedoch einen zu großen Aufwand darstellt, wurde darauf verzichtet.
 
-Wird die Payload weiter vergrößert, in diesem Fall auf 100000 Bytes (100 kB), sieht man, dass die asynchronen Methoden deutlich schneller sind als die synchronen Methoden. Dies resultiert darin, dass bei I/O-lastigen Aufgaben, in diesem Fall das Lesen bzw. Schreiben der Payload vom bzw. auf den \mintinline{csharp}{Stream} oder dem \mintinline{csharp}{ReadonlyMemory<byte>}, die Asynchronität ihre Vorteile ausspielen kann, da eine große Menge an Daten gelesen oder geschrieben wird. Andere I/O-lastige Aufgaben sind etwa die Übertragung von Daten über das Netzwerk oder jeglicher Zugriff auf das Filesystem. Es wird dabei asynchron die Daten vom jeweiligen Stream gelesen (siehe Codebeispiel \ref{listing:asynchrones-auslesen-eines-streams-mit-ibufferwriter}) bzw. auf den jeweiligen Stream geschrieben (siehe Codebeispiel \ref{listing:asynchrones-beschreiben-eines-streams}).
-
-\begin{listing}[h]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/example_read_async_stream.cs}
-    \caption{Asynchrones Lesen eines Streams mittels IBufferWriters}
-    \label{listing:asynchrones-auslesen-eines-streams-mit-ibufferwriter}
-\end{listing}
-
-\begin{listing}[h]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/example_write_async_stream.cs}
-    \caption{Asynchrones Beschreiben eines Streams}
-    \label{listing:asynchrones-beschreiben-eines-streams}
-\end{listing}
-
-Sobald sich jedoch die Anzahl der Options erhöht, sinkt die durchschnittliche Laufzeit der asynchronen Methoden und der Abstand zu den synchronen Methoden vergrößert sich (siehe Tabelle \ref{tab:benchmark-1000-0-streamwriter}). Hierbei steigt die Laufzeit von \textit{SerializeAsync} auf 2191 Sekunden und der Speicherverbrauch auf 5,383 KB. Im Gegensatz dazu schneidet \textit{Serialize} mit 325 Sekunden und einem Speicherverbrauch von 160 KB deutlich besser ab. Da dies eine ungewöhnliche Abweichung darstellt, wurde nachgeforscht und der Grund für die Verlangsamung von \textit{SerializeAsync} gefunden: Um Options, die einen \textit{string} als Wert besitzen, auf einen Stream zu schreiben, wurde die \textit{StreamWriter}-Klasse verwendet. Diese ermöglicht es, mit einer bestimmten Zeichenkodierung auf einen \textit{Stream} zu schreiben (siehe Codebeispiel \ref{listing:asynchrones-schreiben-eines-strings-auf-einen-stream-streamwriter}).
-
-Verwendet man jedoch die angebotenen Schreibmethoden von der \textit{Stream}-Klasse, indem man zuvor den String durch die entsprechende Zeichenkodierung in \textit{bytes} umwandeln lässt (siehe Codebeispiel \ref{listing:asynchrones-schreiben-eines-strings-auf-einen-stream}), verringert sich die durchschnittliche Laufzeit und auch der Speicherverbrauch (siehe Tabelle \ref{tab:benchmark-1000-0-ohne-streamwriter}).
-
-Eine mögliche Erklärung, warum bei der Verwendung des \textit{StreamWriter}s eine so hohe Laufzeit und Speicherverbrauch anfällt, kann leider nicht erbracht werden, da hier das Wissen des Verfassers übersteigt. Vergleicht man den Code der jeweiligen \textit{WriteAsync}-Methoden von \textit{StreamWriter}\footnote{\href{https://github.com/microsoft/referencesource/blob/master/mscorlib/system/io/streamwriter.cs}{Implementierung von StreamWriter auf GitHub}} mit der von \textit{Stream}\footnote{\href{https://github.com/microsoft/referencesource/blob/master/mscorlib/system/io/stream.cs}{Implementierung von Stream auf Github}}, kann man einige Optimierungen bei \textit{Stream} erkennen, die wahrscheinlich einen Unterschied ausmachen.
-
-Die nachfolgenden Messungen wurden ohne die Nutzung des \textit{StreamWriter}s durchgeführt. Dies resultierte darin, dass die durchschnittliche Laufzeit von \textit{SerializeAsync} sich auf einem niedrigeren Niveau eingependelt hat, im Vergleich zu den Messungen, in denen noch der \textit{StreamWriter} verwendet wurde.
-
-\begin{listing}[h]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/async_write_using_stream_writer.cs}
-    \caption{Asynchrones Schreiben eines strings auf einen Stream mittels StreamWriter}
-    \label{listing:asynchrones-schreiben-eines-strings-auf-einen-stream-streamwriter}
-\end{listing}
-
-\begin{listing}[h]
-    \inputminted[framesep=2mm, baselinestretch=1.2, fontsize=\normalsize, linenos]{csharp}{codes/async_write_using_stream.cs}
-    \caption{Asynchrones Schreiben eines strings auf einen Stream}
-    \label{listing:asynchrones-schreiben-eines-strings-auf-einen-stream}
-\end{listing}
-
-Ab dem Zeitpunkt, in dem sich eine größere Anzahl an Options in der CoAP-Nachricht befinden, können die asynchronen Methoden ihren Geschwindigkeitsvorteil vom Szenario, in dem nur eine Payload mit weniger als 100000 Bytes (100 KB) gegeben war (siehe Tabellen \ref{tab:benchmark-0-0}, \ref{tab:benchmark-0-1000} und \ref{tab:benchmark-0-100000}), nicht mehr ausspielen. Dies ist darauf zurückzuführen, dass bei kleineren Datenmengen der Overhead, der durch die asynchrone Zustandsmaschine erzeugt wird, zu stark überwiegt. Deshalb werden auf die Ergebnisse, visualisiert durch die Tabellen \ref{tab:benchmark-1000-100000} bis \ref{tab:benchmark-100000-100000}, nicht näher eingegangen.
-
-Vergrößert man jedoch die Größe der Payload über 100 MB (in Tabelle \ref{tab:benchmark-100000-1000000000} auf 1 GB), wird der Abstand zwischen \textit{Serialize} und \textit{SerializeAsync} sowohl im Hinblick auf die durchschnittliche Laufzeit als auch den Speicherverbrauch deutlich größer. Hierbei ist \textit{SerializeAsync} um den Faktor 7 schneller im Durchschnitt und um den Faktor 143 effizienter im Speicherverbrauch.
+Die detaillierten Messergebnisse von \textit{Dserialize} und \textit{DeserializeAsync} können in den Tabellen \ref{tab:benchmark-deserialize} und \ref{tab:benchmark-deserialize-async}, als auch visualisiert durch die Bilder \ref{fig:messergebnisse-deserialize} und \ref{fig:messergebnisse-deserialize-async}, eingesehen werden.
 
 \begin{figure}[h]
     \centering
@@ -311,6 +224,49 @@ Vergrößert man jedoch die Größe der Payload über 100 MB (in Tabelle \ref{ta
     \caption{Messergebnisse von DeserializeAsync-Methode als Diagramm}
     \label{fig:messergebnisse-deserialize-async}
 \end{figure}
+
+Betrachtet man nun die Ergebnisse, für die \textit{Serialize}- und \textit{SerializeAsync}-Methode, die in Tabelle \ref{tab:vergleich-serialize-async-serialize} enthalten sind, ist auffällig, dass bei Nichtvorhandensein von Optionen, mit steigender Größe der Payload \textit{SerializeAsync} immer schneller ist als sein synchroner Gegenpart. Als sich jedoch Optionen in der CoAP-Nachricht befinden, dann ändert sich das Ergebnis zugunsten der \textit{Serialize}-Methode. Dies lässt sich damit erklären, dass durch das asynchrone Schreiben von Optionen, die nur einige Kilobytes groß sind, der Mehraufwand, zur Erzeugung der asynchronen Zustandsmaschine, überwiegt. Hier wäre eine Optimierung im Sinne eines gepufferten Schreibers möglich, da zuerst die Optionen serialisiert werden, also von der Objektstruktur in die zugrundeliegenden Bytes umgewandelt werden, in den Arbeitsspeicher und abschließend im einen Durchgang auf dem Stream asynchron geschrieben werden. Somit müsste nicht für jede Option einzeln eine asynchrone Zustandsmaschine erzeugt werden, sondern nur eine für den abschließenden Schreibvorgang vom Arbeitsspeicher auf dem Stream.
+
+Die Daten, die in der Tabelle \ref{tab:vergleich-serialize-async-serialize} aufgeführt sind, sind auch visuell in einem logarithmischen Diagramm dargestellt (Bilder \ref{fig:messergebnisse-serialize} und \ref{fig:messergebnisse-serialize-async}).
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{@{}llll@{}}
+    \toprule
+    $n_{Optionen}$ & $l_{Payload}$ [B] & $t_{SerializeAsync}$ [\mu s]& $t_{Serialize}$ [\mu s] \\ \midrule
+    0                   & 0                     & 5.618                                           & 5.142                                      \\
+    0                   & 1024                  & 5.658                                           & 5.867                                      \\
+    0                   & 4096                  & 5.710                                           & 7.186                                      \\
+    0                   & 65536                 & 7.356                                           & 23.527                                     \\
+    0                   & 131072                & 9.347                                           & 49.680                                     \\
+    1024                & 0                     & 857.681                                         & 551.922                                    \\
+    1024                & 1024                  & 864.956                                         & 569.763                                    \\
+    1024                & 4096                  & 874.255                                         & 570.333                                    \\
+    1024                & 65536                 & 853.992                                         & 563.479                                    \\
+    1024                & 131072                & 878.702                                         & 594.334                                    \\
+    4096                & 0                     & 3415.820                                        & 2758.439                                   \\
+    4096                & 1024                  & 3520.379                                        & 2659.178                                   \\
+    4096                & 4096                  & 3415.203                                        & 2596.436                                   \\
+    4096                & 65536                 & 3517.490                                        & 2507.161                                   \\
+    4096                & 131072                & 3533.880                                        & 2559.126                                   \\
+    65536               & 0                     & 57919.596                                       & 58896.194                                  \\
+    65536               & 1024                  & 55995.639                                       & 58689.037                                  \\
+    65536               & 4096                  & 54769.243                                       & 58655.719                                  \\
+    65536               & 65536                 & 56494.925                                       & 59328.566                                  \\
+    65536               & 131072                & 56286.964                                       & 57420.750                                  \\
+    131072              & 0                     & 112894.956                                      & 117807.577                                 \\
+    131072              & 1024                  & 110892.868                                      & 119120.364                                 \\
+    131072              & 4096                  & 109851.123                                      & 120061.250                                 \\
+    131072              & 65536                 & 111436.460                                      & 120002.202                                 \\
+    131072              & 131072                & 112449.316                                      & 120453.645                                 \\ \bottomrule
+    \end{tabular}%
+    \caption{Vergleich SerializeAsync und Serialize}
+    \label{tab:vergleich-serialize-async-serialize}
+\end{table}
+
+Vergrößert man jedoch die Größe der Payload auf 1 GB, wie in Tabelle \ref{tab:benchmark-100000-1000000000} ersichtlich, wird der Abstand zwischen \textit{Serialize} und \textit{SerializeAsync} sowohl im Hinblick auf die durchschnittliche Laufzeit als auch den Speicherverbrauch deutlich größer. Hierbei ist \textit{SerializeAsync} um den Faktor 7 schneller im Durchschnitt und um den Faktor 143 effizienter im Speicherverbrauch.
+
+
 
 \begin{figure}[h]
     \centering

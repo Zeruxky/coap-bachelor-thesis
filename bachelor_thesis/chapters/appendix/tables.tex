@@ -75,156 +75,6 @@
 
 \begin{table}[h]
     \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error     & StdDev    & Gen 0  & Allocated \\ \midrule
-    SerializeAsync   & 0               & 1000            & 5.914 μs & 0.0909 μs & 0.0805 μs & 0.0839 & 376 B     \\
-    Serialize        & 0               & 1000            & 6.207 μs & 0.1199 μs & 0.1177 μs & 0.3128 & 1,312 B   \\
-    DeserializeAsync & 0               & 1000            & 3.284 μs & 0.0636 μs & 0.0732 μs & 0.9232 & 3,824 B   \\
-    Deserialize      & 0               & 1000            & 3.261 μs & 0.0631 μs & 0.0727 μs & 0.9308 & 3,864 B   \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 0 Options und mit einer Payload von 1000 Bytes}
-    \label{tab:benchmark-0-1000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error     & StdDev    & Gen 0   & Gen 1   & Gen 2   & Allocated \\ \midrule
-    SerializeAsync   & 0               & 100000          & 8.611 μs   & 0.1519 μs & 0.1268 μs & 0.0763  & -       & -       & 376 B     \\
-    Serialize        & 0               & 100000          & 84.259 μs  & 1.1186 μs & 1.0464 μs & 31.1279 & 31.1279 & 31.1279 & 100,312 B \\
-    DeserializeAsync & 0               & 100000          & 57.500 μs  & 1.1007 μs & 1.2675 μs & 83.3130 & 83.3130 & 83.3130 & 264,040 B \\
-    Deserialize      & 0               & 100000          & 107.972 μs & 1.3266 μs & 1.1078 μs & 83.2520 & 83.2520 & 83.2520 & 263,984 B \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 0 Options und mit einer Payload von 100000 Bytes}
-    \label{tab:benchmark-0-100000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 0               & 2,191.0 μs & 42.42 μs & 56.63 μs & 1316.4063 & -       & 5,383 KB  \\
-    Serialize        & 1000            & 0               & 325.0 μs   & 3.36 μs  & 2.98 μs  & 39.0625   & -       & 160 KB    \\
-    DeserializeAsync & 1000            & 0               & 950.3 μs   & 11.10 μs & 9.84 μs  & 122.0703  & 37.1094 & 526 KB    \\
-    Deserialize      & 1000            & 0               & 645.3 μs   & 12.27 μs & 12.05 μs & 74.2188   & 24.4141 & 323 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 0 Bytes, jedoch mit StreamWriter}
-    \label{tab:benchmark-1000-0-streamwriter}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error    & StdDev   & Gen 0    & Gen 1   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 0               & 740.2 μs & 14.14 μs & 15.72 μs & 50.7813  & -       & 211 KB    \\
-    Serialize        & 1000            & 0               & 330.7 μs & 6.57 μs  & 5.82 μs  & 39.0625  & -       & 160 KB    \\
-    DeserializeAsync & 1000            & 0               & 952.6 μs & 16.95 μs & 15.03 μs & 121.0938 & 40.0391 & 526 KB    \\
-    Deserialize      & 1000            & 0               & 591.0 μs & 8.91 μs  & 8.33 μs  & 74.2188  & 24.4141 & 323 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 0 Bytes, jedoch ohne StreamWriter.}
-    \label{tab:benchmark-1000-0-ohne-streamwriter}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}lllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean     & Error    & StdDev   & Gen 0    & Gen 1   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 1000            & 715.4 μs & 14.28 μs & 15.87 μs & 50.7813  & -       & 211 KB    \\
-    Serialize        & 1000            & 1000            & 315.6 μs & 1.90 μs  & 1.78 μs  & 39.0625  & -       & 161 KB    \\
-    DeserializeAsync & 1000            & 1000            & 923.6 μs & 6.20 μs  & 5.18 μs  & 121.0938 & 41.0156 & 529 KB    \\
-    Deserialize      & 1000            & 1000            & 593.0 μs & 5.02 μs  & 4.45 μs  & 75.1953  & 15.6250 & 326 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 1000 Bytes}
-    \label{tab:benchmark-1000-1000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0    & Gen 1   & Gen 2   & Allocated \\ \midrule
-    SerializeAsync   & 1000            & 100000          & 721.9 μs   & 13.99 μs & 24.86 μs & 50.7813  & -       & -       & 211 KB    \\
-    Serialize        & 1000            & 100000          & 368.6 μs   & 6.78 μs  & 6.34 μs  & 64.4531  & 32.2266 & 32.2266 & 258 KB    \\
-    DeserializeAsync & 1000            & 100000          & 1,047.4 μs & 13.92 μs & 12.34 μs & 164.0625 & 82.0313 & 82.0313 & 783 KB    \\
-    Deserialize      & 1000            & 100000          & 767.0 μs   & 15.31 μs & 16.38 μs & 83.0078  & 83.0078 & 83.0078 & 580 KB    \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 1000 Options und mit einer Payload von 100000 Bytes}
-    \label{tab:benchmark-1000-100000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0     & Gen 1     & Gen 2     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 0               & 68.01 ms  & 0.651 ms & 0.609 ms & 5125.0000 & -         & -         & 21 MB     \\
-    Serialize        & 100000          & 0               & 30.87 ms  & 0.320 ms & 0.283 ms & 3843.7500 & 31.2500   & 31.2500   & 16 MB     \\
-    DeserializeAsync & 100000          & 0               & 144.43 ms & 2.678 ms & 2.505 ms & 8500.0000 & 3250.0000 & 1000.0000 & 50 MB     \\
-    Deserialize      & 100000          & 0               & 116.40 ms & 2.222 ms & 5.281 ms & 5400.0000 & 2000.0000 & 800.0000  & 32 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 0 Bytes}
-    \label{tab:benchmark-100000-0}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0     & Gen 1     & Gen 2     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 1000            & 69.35 ms  & 0.878 ms & 0.778 ms & 5125.0000 & -         & -         & 21 MB     \\
-    Serialize        & 100000          & 1000            & 31.50 ms  & 0.406 ms & 0.339 ms & 3843.7500 & 31.2500   & 31.2500   & 16 MB     \\
-    DeserializeAsync & 100000          & 1000            & 152.99 ms & 3.035 ms & 7.154 ms & 8500.0000 & 3250.0000 & 1000.0000 & 50 MB     \\
-    Deserialize      & 100000          & 1000            & 110.34 ms & 2.188 ms & 4.320 ms & 5800.0000 & 2400.0000 & 1000.0000 & 32 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und 1000 Bytes}
-    \label{tab:benchmark-100000-1000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev    & Gen 0     & Gen 1     & Gen 2     & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 100000          & 69.25 ms  & 0.458 ms & 0.383 ms  & 5125.0000 & -         & -         & 21 MB     \\
-    Serialize        & 100000          & 100000          & 32.23 ms  & 0.619 ms & 0.826 ms  & 3843.7500 & 31.2500   & 31.2500   & 16 MB     \\
-    DeserializeAsync & 100000          & 100000          & 166.15 ms & 4.591 ms & 13.391 ms & 8750.0000 & 3250.0000 & 1000.0000 & 50 MB     \\
-    Deserialize      & 100000          & 100000          & 113.15 ms & 2.256 ms & 6.545 ms  & 5400.0000 & 2000.0000 & 800.0000  & 32 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 100000 Bytes (100 KB)}
-    \label{tab:benchmark-100000-100000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llllllllll@{}}
-    \toprule
-    Method           & AmountOfOptions & LengthOfPayload & Mean      & Error    & StdDev   & Gen 0     & Gen 1     & Gen 2    & Allocated \\ \midrule
-    SerializeAsync   & 100000          & 1000000         & 69.00 ms  & 1.069 ms & 0.948 ms & 5125.0000 & -         & -        & 21 MB     \\
-    Serialize        & 100000          & 1000000         & 34.34 ms  & 0.407 ms & 0.361 ms & 4062.5000 & 250.0000  & 250.0000 & 19 MB     \\
-    DeserializeAsync & 100000          & 1000000         & 140.89 ms & 1.490 ms & 1.394 ms & 8500.0000 & 3250.0000 & 750.0000 & 52 MB     \\
-    Deserialize      & 100000          & 1000000         & 102.68 ms & 2.028 ms & 2.082 ms & 5400.0000 & 2000.0000 & 800.0000 & 34 MB     \\ \bottomrule
-    \end{tabular}%
-    }
-    \caption{Benchmark mit 100000 Options und mit einer Payload von 1000000 Bytes (100 MB)}
-    \label{tab:benchmark-100000-1000000}
-\end{table}
-
-\begin{table}[h]
-    \resizebox{\textwidth}{!}{%
     \begin{tabular}{@{}lllllllll@{}}
     \toprule
     Method           & AmountOfOptions & LengthOfPayload & Mean       & Error    & StdDev   & Gen 0     & Gen 1     & Allocated \\ \midrule
@@ -237,17 +87,6 @@
     \caption{Benchmark mit 100000 Options und mit einer Payload von 1000000000 Bytes (1 GB)}
     \label{tab:benchmark-100000-1000000000}
 \end{table}
-
-\begin{itemize}
-    \item Method: Der Name der zu testenden Methode.
-    \item AmountOfOptions: Anzahl der Options (in diesem Fall Options des Typs UriPath).
-    \item LengthOfPayload: Länge der Payload in Bytes.
-    \item Mean: Arithmetisches Mittel aus allen Messungen.
-    \item Error: Die Hälfte des 99,9\%-igen Konfidenzintervalls.
-    \item StdDev: Die Standardabweichung aller Messungen.
-    \item Gen X: Anzahl der Garbage Collector Generation X Sammlungen jede 1000 Operationen.
-    \item Allocated: Größe des verwalteten (\textit{managed}) Speichers.
-\end{itemize}
 
 \begin{table}[h]
     \resizebox{\textwidth}{!}{%
@@ -285,41 +124,110 @@
     \label{tab:benchmark-deserialize-async}
 \end{table}
 
-% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
-% \usepackage{graphicx}
 \begin{table}[]
     \resizebox{\textwidth}{!}{%
     \begin{tabular}{@{}lllllllll@{}}
     \toprule
     AmountOfOptions & LengthOfPayload & Mean           & Error         & StdDev         & Gen 0      & Gen 1     & Gen 2     & Allocated  \\ \midrule
-    0               & 0               & 1.679 μs       & 0.0310 μs     & 0.0275 μs      & 0.3948     & -         & -         & 2 KB       \\
-    0               & 1024            & 3.683 μs       & 0.0712 μs     & 0.0666 μs      & 1.6327     & -         & -         & 6 KB       \\
-    0               & 4096            & 6.570 μs       & 0.0678 μs     & 0.0530 μs      & 2.9373     & -         & -         & 10 KB      \\
-    0               & 65536           & 98.533 μs      & 1.8525 μs     & 1.9822 μs      & 83.2520    & 83.2520   & 83.2520   & 258 KB     \\
-    0               & 131072          & 175.433 μs     & 1.3566 μs     & 1.2026 μs      & 166.5039   & 166.5039  & 166.5039  & 514 KB     \\
-    1024            & 0               & 1,030.051 μs   & 9.6583 μs     & 9.0344 μs      & 196.2891   & 97.6563   & -         & 1,075 KB   \\
-    1024            & 1024            & 1,014.093 μs   & 6.1471 μs     & 5.1331 μs      & 191.4063   & 95.7031   & -         & 1,079 KB   \\
-    1024            & 4096            & 1,027.275 μs   & 9.5509 μs     & 8.9339 μs      & 192.3828   & 95.7031   & -         & 1,091 KB   \\
-    1024            & 65536           & 1,631.388 μs   & 38.9956 μs    & 114.3674 μs    & 273.4375   & 191.4063  & 76.1719   & 1,331 KB   \\
-    1024            & 131072          & 1,781.418 μs   & 35.2748 μs    & 71.2567 μs     & 332.0313   & 277.3438  & 144.5313  & 1,587 KB   \\
-    4096            & 0               & 6,477.162 μs   & 129.3902 μs   & 163.6372 μs    & 726.5625   & 328.1250  & 101.5625  & 4,291 KB   \\
-    4096            & 1024            & 6,711.475 μs   & 133.2189 μs   & 259.8331 μs    & 734.3750   & 335.9375  & 93.7500   & 4,295 KB   \\
-    4096            & 4096            & 6,558.996 μs   & 130.5046 μs   & 339.1988 μs    & 742.1875   & 343.7500  & 109.3750  & 4,307 KB   \\
-    4096            & 65536           & 6,924.552 μs   & 137.4221 μs   & 261.4598 μs    & 804.6875   & 421.8750  & 85.9375   & 4,547 KB   \\
-    4096            & 131072          & 7,530.808 μs   & 147.7269 μs   & 175.8583 μs    & 843.7500   & 460.9375  & 148.4375  & 4,803 KB   \\
-    65536           & 0               & 166,612.138 μs & 3,300.2174 μs & 3,241.2547 μs  & 11666.6667 & 4333.3333 & 666.6667  & 68,613 KB  \\
-    65536           & 1024            & 190,898.380 μs & 3,756.8801 μs & 4,885.0053 μs  & 11750.0000 & 4500.0000 & 1000.0000 & 68,617 KB  \\
-    65536           & 4096            & 190,316.150 μs & 3,778.9048 μs & 6,716.9994 μs  & 12000.0000 & 4750.0000 & 1000.0000 & 68,629 KB  \\
-    65536           & 65536           & 195,944.825 μs & 3,911.2806 μs & 8,585.3557 μs  & 11750.0000 & 4500.0000 & 1000.0000 & 68,869 KB  \\
-    65536           & 131072          & 170,582.006 μs & 3,144.9051 μs & 6,494.7744 μs  & 11666.6667 & 4333.3333 & 666.6667  & 69,125 KB  \\
-    131072          & 0               & 286,105.657 μs & 4,145.7348 μs & 3,675.0859 μs  & 22000.0000 & 7000.0000 & -         & 137,225 KB \\
-    131072          & 1024            & 285,783.220 μs & 4,849.2919 μs & 4,536.0307 μs  & 22000.0000 & 7000.0000 & -         & 137,227 KB \\
-    131072          & 4096            & 282,355.564 μs & 4,535.0488 μs & 4,020.2027 μs  & 22000.0000 & 7000.0000 & -         & 137,239 KB \\
-    131072          & 65536           & 292,059.675 μs & 5,689.0265 μs & 5,587.3847 μs  & 22000.0000 & 7000.0000 & -         & 137,481 KB \\
-    131072          & 131072          & 304,488.343 μs & 5,960.5795 μs & 11,484.0131 μs & 22000.0000 & 7000.0000 & -         & 137,735 KB \\ \bottomrule
+    0               & 0               & 1.679 \mu s       & 0.0310 \mu s     & 0.0275 \mu s      & 0.3948     & -         & -         & 2 KB       \\
+    0               & 1024            & 3.683 \mu s       & 0.0712 \mu s     & 0.0666 \mu s      & 1.6327     & -         & -         & 6 KB       \\
+    0               & 4096            & 6.570 \mu s       & 0.0678 \mu s     & 0.0530 \mu s      & 2.9373     & -         & -         & 10 KB      \\
+    0               & 65536           & 98.533 \mu s      & 1.8525 \mu s     & 1.9822 \mu s      & 83.2520    & 83.2520   & 83.2520   & 258 KB     \\
+    0               & 131072          & 175.433 \mu s     & 1.3566 \mu s     & 1.2026 \mu s      & 166.5039   & 166.5039  & 166.5039  & 514 KB     \\
+    1024            & 0               & 1,030.051 \mu s   & 9.6583 \mu s     & 9.0344 \mu s      & 196.2891   & 97.6563   & -         & 1,075 KB   \\
+    1024            & 1024            & 1,014.093 \mu s   & 6.1471 \mu s     & 5.1331 \mu s      & 191.4063   & 95.7031   & -         & 1,079 KB   \\
+    1024            & 4096            & 1,027.275 \mu s   & 9.5509 \mu s     & 8.9339 \mu s      & 192.3828   & 95.7031   & -         & 1,091 KB   \\
+    1024            & 65536           & 1,631.388 \mu s   & 38.9956 \mu s    & 114.3674 \mu s    & 273.4375   & 191.4063  & 76.1719   & 1,331 KB   \\
+    1024            & 131072          & 1,781.418 \mu s   & 35.2748 \mu s    & 71.2567 \mu s     & 332.0313   & 277.3438  & 144.5313  & 1,587 KB   \\
+    4096            & 0               & 6,477.162 \mu s   & 129.3902 \mu s   & 163.6372 \mu s    & 726.5625   & 328.1250  & 101.5625  & 4,291 KB   \\
+    4096            & 1024            & 6,711.475 \mu s   & 133.2189 \mu s   & 259.8331 \mu s    & 734.3750   & 335.9375  & 93.7500   & 4,295 KB   \\
+    4096            & 4096            & 6,558.996 \mu s   & 130.5046 \mu s   & 339.1988 \mu s    & 742.1875   & 343.7500  & 109.3750  & 4,307 KB   \\
+    4096            & 65536           & 6,924.552 \mu s   & 137.4221 \mu s   & 261.4598 \mu s    & 804.6875   & 421.8750  & 85.9375   & 4,547 KB   \\
+    4096            & 131072          & 7,530.808 \mu s   & 147.7269 \mu s   & 175.8583 \mu s    & 843.7500   & 460.9375  & 148.4375  & 4,803 KB   \\
+    65536           & 0               & 166,612.138 \mu s & 3,300.2174 \mu s & 3,241.2547 \mu s  & 11666.6667 & 4333.3333 & 666.6667  & 68,613 KB  \\
+    65536           & 1024            & 190,898.380 \mu s & 3,756.8801 \mu s & 4,885.0053 \mu s  & 11750.0000 & 4500.0000 & 1000.0000 & 68,617 KB  \\
+    65536           & 4096            & 190,316.150 \mu s & 3,778.9048 \mu s & 6,716.9994 \mu s  & 12000.0000 & 4750.0000 & 1000.0000 & 68,629 KB  \\
+    65536           & 65536           & 195,944.825 \mu s & 3,911.2806 \mu s & 8,585.3557 \mu s  & 11750.0000 & 4500.0000 & 1000.0000 & 68,869 KB  \\
+    65536           & 131072          & 170,582.006 \mu s & 3,144.9051 \mu s & 6,494.7744 \mu s  & 11666.6667 & 4333.3333 & 666.6667  & 69,125 KB  \\
+    131072          & 0               & 286,105.657 \mu s & 4,145.7348 \mu s & 3,675.0859 \mu s  & 22000.0000 & 7000.0000 & -         & 137,225 KB \\
+    131072          & 1024            & 285,783.220 \mu s & 4,849.2919 \mu s & 4,536.0307 \mu s  & 22000.0000 & 7000.0000 & -         & 137,227 KB \\
+    131072          & 4096            & 282,355.564 \mu s & 4,535.0488 \mu s & 4,020.2027 \mu s  & 22000.0000 & 7000.0000 & -         & 137,239 KB \\
+    131072          & 65536           & 292,059.675 \mu s & 5,689.0265 \mu s & 5,587.3847 \mu s  & 22000.0000 & 7000.0000 & -         & 137,481 KB \\
+    131072          & 131072          & 304,488.343 \mu s & 5,960.5795 \mu s & 11,484.0131 \mu s & 22000.0000 & 7000.0000 & -         & 137,735 KB \\ \bottomrule
     \end{tabular}%
     }
     \caption{Benchmark Deserialize}
     \label{tab:benchmark-deserialize}
+\end{table}
+
+\begin{table}[]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lllllll@{}}
+    \toprule
+    AmountOfOptions & LengthOfPayload & Mean           & Error         & StdDev        & Gen 0      & Allocated    \\ \midrule
+    0               & 0               & 5.618 \mu s       & 0.0390 \mu s     & 0.0345 \mu s     & 0.0839     & 376 B        \\
+    0               & 1024            & 5.658 \mu s       & 0.0258 \mu s     & 0.0215 \mu s     & 0.0839     & 376 B        \\
+    0               & 4096            & 5.710 \mu s       & 0.0276 \mu s     & 0.0231 \mu s     & 0.0839     & 376 B        \\
+    0               & 65536           & 7.356 \mu s       & 0.0524 \mu s     & 0.0464 \mu s     & 0.0839     & 376 B        \\
+    0               & 131072          & 9.347 \mu s       & 0.0350 \mu s     & 0.0327 \mu s     & 0.0763     & 376 B        \\
+    1024            & 0               & 857.681 \mu s     & 5.6334 \mu s     & 5.2695 \mu s     & 113.2813   & 475,569 B    \\
+    1024            & 1024            & 864.956 \mu s     & 8.3344 \mu s     & 7.7960 \mu s     & 113.2813   & 475,570 B    \\
+    1024            & 4096            & 874.255 \mu s     & 11.4655 \mu s    & 9.5742 \mu s     & 113.2813   & 475,571 B    \\
+    1024            & 65536           & 853.992 \mu s     & 7.4185 \mu s     & 6.9393 \mu s     & 113.2813   & 475,569 B    \\
+    1024            & 131072          & 878.702 \mu s     & 7.5007 \mu s     & 7.0161 \mu s     & 113.2813   & 475,569 B    \\
+    4096            & 0               & 3,415.820 \mu s   & 20.0413 \mu s    & 18.7467 \mu s    & 453.1250   & 1,900,983 B  \\
+    4096            & 1024            & 3,520.379 \mu s   & 34.5694 \mu s    & 32.3363 \mu s    & 453.1250   & 1,900,976 B  \\
+    4096            & 4096            & 3,415.203 \mu s   & 28.1909 \mu s    & 26.3698 \mu s    & 453.1250   & 1,900,976 B  \\
+    4096            & 65536           & 3,517.490 \mu s   & 29.9689 \mu s    & 26.5667 \mu s    & 453.1250   & 1,900,981 B  \\
+    4096            & 131072          & 3,533.880 \mu s   & 41.2242 \mu s    & 36.5442 \mu s    & 453.1250   & 1,900,976 B  \\
+    65536           & 0               & 57,919.596 \mu s  & 667.7145 \mu s   & 624.5805 \mu s   & 7200.0000  & 30,409,136 B \\
+    65536           & 1024            & 55,995.639 \mu s  & 537.3204 \mu s   & 476.3206 \mu s   & 7200.0000  & 30,409,136 B \\
+    65536           & 4096            & 54,769.243 \mu s  & 426.8328 \mu s   & 378.3761 \mu s   & 7200.0000  & 30,409,136 B \\
+    65536           & 65536           & 56,494.925 \mu s  & 574.7165 \mu s   & 537.5901 \mu s   & 7200.0000  & 30,409,136 B \\
+    65536           & 131072          & 56,286.964 \mu s  & 373.1133 \mu s   & 349.0104 \mu s   & 7200.0000  & 30,409,136 B \\
+    131072          & 0               & 112,894.956 \mu s & 947.4691 \mu s   & 839.9067 \mu s   & 14400.0000 & 60,817,941 B \\
+    131072          & 1024            & 110,892.868 \mu s & 1,111.1807 \mu s & 1,039.3991 \mu s & 14400.0000 & 60,818,109 B \\
+    131072          & 4096            & 109,851.123 \mu s & 1,410.9865 \mu s & 1,178.2376 \mu s & 14400.0000 & 60,820,210 B \\
+    131072          & 65536           & 111,436.460 \mu s & 688.9756 \mu s   & 610.7590 \mu s   & 14400.0000 & 60,818,109 B \\
+    131072          & 131072          & 112,449.316 \mu s & 685.4489 \mu s   & 607.6326 \mu s   & 14400.0000 & 60,818,109 B \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark SerializeAsync}
+    \label{tab:benchmark-serialize-async}
+\end{table}
+
+\begin{table}[]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lllllllll@{}}
+    \toprule
+    AmountOfOptions & LengthOfPayload & Mean           & Error         & StdDev        & Gen 0      & Gen 1     & Gen 2     & Allocated     \\ \midrule
+    0               & 0               & 5.142 \mu s       & 0.0683 \mu s     & 0.0639 \mu s     & 0.0687     & -         & -         & 288 B         \\
+    0               & 1024            & 5.867 \mu s       & 0.0751 \mu s     & 0.0702 \mu s     & 0.3281     & -         & -         & 1,384 B       \\
+    0               & 4096            & 7.186 \mu s       & 0.0671 \mu s     & 0.0628 \mu s     & 1.0757     & -         & -         & 4,504 B       \\
+    0               & 65536           & 23.527 \mu s      & 0.2614 \mu s     & 0.2183 \mu s     & 15.5945    & 3.1128    & -         & 66,040 B      \\
+    0               & 131072          & 49.680 \mu s      & 0.5993 \mu s     & 0.5606 \mu s     & 41.6260    & 41.6260   & 41.6260   & 131,600 B     \\
+    1024            & 0               & 551.922 \mu s     & 9.4106 \mu s     & 10.0692 \mu s    & 175.7813   & 76.1719   & 76.1719   & 681,589 B     \\
+    1024            & 1024            & 569.763 \mu s     & 11.1684 \mu s    & 17.7143 \mu s    & 175.7813   & 76.1719   & 76.1719   & 682,612 B     \\
+    1024            & 4096            & 570.333 \mu s     & 11.2692 \mu s    & 15.0440 \mu s    & 175.7813   & 76.1719   & 76.1719   & 685,693 B     \\
+    1024            & 65536           & 563.479 \mu s     & 5.4708 \mu s     & 4.8498 \mu s     & 195.3125   & 95.7031   & 95.7031   & 747,134 B     \\
+    1024            & 131072          & 594.334 \mu s     & 6.3800 \mu s     & 5.6557 \mu s     & 209.9609   & 110.3516  & 110.3516  & 812,665 B     \\
+    4096            & 0               & 2,758.439 \mu s   & 55.0103 \mu s    & 105.9861 \mu s   & 808.5938   & 410.1563  & 410.1563  & 4,821,823 B   \\
+    4096            & 1024            & 2,659.178 \mu s   & 40.6188 \mu s    & 37.9949 \mu s    & 800.7813   & 402.3438  & 402.3438  & 4,822,917 B   \\
+    4096            & 4096            & 2,596.436 \mu s   & 46.9202 \mu s    & 64.2249 \mu s    & 875.0000   & 476.5625  & 476.5625  & 4,825,775 B   \\
+    4096            & 65536           & 2,507.161 \mu s   & 49.8926 \mu s    & 101.9173 \mu s   & 894.5313   & 496.0938  & 496.0938  & 4,887,220 B   \\
+    4096            & 131072          & 2,559.126 \mu s   & 19.1575 \mu s    & 15.9973 \mu s    & 890.6250   & 492.1875  & 492.1875  & 4,952,758 B   \\
+    65536           & 0               & 58,896.194 \mu s  & 1,159.8829 \mu s & 1,872.9947 \mu s & 7333.3333  & 1000.0000 & 1000.0000 & 108,594,097 B \\
+    65536           & 1024            & 58,689.037 \mu s  & 1,169.1967 \mu s & 1,639.0505 \mu s & 7200.0000  & 900.0000  & 900.0000  & 108,595,122 B \\
+    65536           & 4096            & 58,655.719 \mu s  & 1,165.0065 \mu s & 1,707.6514 \mu s & 7200.0000  & 900.0000  & 900.0000  & 108,598,179 B \\
+    65536           & 65536           & 59,328.566 \mu s  & 1,168.5292 \mu s & 1,638.1147 \mu s & 7333.3333  & 1000.0000 & 1000.0000 & 108,659,633 B \\
+    65536           & 131072          & 57,420.750 \mu s  & 1,129.7427 \mu s & 2,008.1165 \mu s & 7100.0000  & 800.0000  & 800.0000  & 108,725,176 B \\
+    131072          & 0               & 117,807.577 \mu s & 2,353.7162 \mu s & 6,482.8180 \mu s & 13800.0000 & 1200.0000 & 1200.0000 & 219,284,480 B \\
+    131072          & 1024            & 119,120.364 \mu s & 2,359.3323 \mu s & 6,132.2185 \mu s & 13200.0000 & 600.0000  & 600.0000  & 219,285,437 B \\
+    131072          & 4096            & 120,061.250 \mu s & 2,387.2366 \mu s & 5,989.1099 \mu s & 13800.0000 & 1200.0000 & 1200.0000 & 219,289,669 B \\
+    131072          & 65536           & 120,002.202 \mu s & 2,372.2717 \mu s & 5,207.1938 \mu s & 13800.0000 & 1200.0000 & 1200.0000 & 219,349,986 B \\
+    131072          & 131072          & 120,453.645 \mu s & 2,374.0783 \mu s & 5,595.9819 \mu s & 13800.0000 & 1200.0000 & 1200.0000 & 219,415,507 B \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Benchmark Serialize}
+    \label{tab:benchmark-serialize}
 \end{table}

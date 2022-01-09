@@ -225,6 +225,13 @@ Eine Option fängt immer mit einem Byte an, das zwei Informationen enthält. Ein
 
 Um jedoch Differenzen und Längen, jenseits des Wertes fünfzehn, verwenden zu können, können dem \textit{Option Header} das \textit{Option Delta (extended)} und \textit{Option Length (extended)} folgen. Diese beiden können jeweils zwischen null und zwei Bytes lang sein. Nach diesen beiden folgt der \textit{Option Value}, der null oder mehr Bytes betragen kann.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{structure_option.png}
+    \caption{Binäre Struktur einer CoAP-Option (Quelle: \autocite{RFC7252}).}
+    \label{fig:binaere-sturktur-einer-coap-option}
+\end{figure}
+
 \subsection{Ausführungsparadigmen in der Informatik}
 \label{subsubsec:ausfuehrungsparadigmen-in-der-informatik}
 
@@ -430,4 +437,4 @@ Als erste Möglichkeit diese Frage zu beantworten, versuchte man für das Open-S
 
 Deshalb entschied man sich dies zu umgehen, indem eine komplette Neuentwicklung des Constrained Application Protocols für C\#, mit modernen Technologien und Patterns, entwickelt wurde. Hierbei wurde bei der Entwicklung auf eine synchrone als auch asynchrone Schnittstelle Wert gelegt, um diese miteinander vergleichen zu können. Dadurch sollte ermittelt werden, inwiefern eine asynchrone Implementation eines (CoAP-)Servers einen Einfluss auf dessen Durchsatzrate hat.
 
-Das Resultat dieser Arbeit ist im Github Repository \href{https://github.com/world-direct/CoAP.NET}{world-direct/CoAP.NET} einsehbar.
+Das Resultat dieser Arbeit ist im Github Repository der Firma World Direct eBusiness solutions GmbH \href{https://github.com/world-direct/CoAP.NET}{world-direct/CoAP.NET} einsehbar. Dies hat den Grund, da die entwickelte Bibliothek auch darüber hinaus firmenintern weiterverwendet werden soll. Jegliche Weiterentwicklungen an dieser Software passieren somit auf diesem Repository und unter der Führung von Mitarbeitern der World Direct eBusiness solutions GmbH.
