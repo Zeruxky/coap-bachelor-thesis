@@ -1,11 +1,11 @@
 \section{Implementierung}
 \label{sec:implementierung}
 
-Das Constrained Application Protocol wird für diese Bachelorarbeit in der Programmiersprache C\# implementiert. Dabei wird die Implementierung nach dem .NET Standard 2.1 entwickelt. Diese ermöglicht es die Bibliothek lauffähig unter den folgenden .NET Versionen und Laufzeitumgebungen zu verwenden: .NET 5.x und .NET Core 3.x. Somit sind alle aktuellen und zukünftig unterstützten Laufzeitumgebungen abgedeckt. Durch .NET Core ist auch eine Verwendung abseits des Betriebssystems Windows, wie Linux oder Mac, möglich.
+Das Constrained Application Protocol wird für diese Bachelorarbeit in der Programmiersprache C\# implementiert. Dabei wird die Implementierung nach dem .NET Standard 2.1 entwickelt. Diese Vorgehensweise ermöglicht es die Bibliothek lauffähig unter den folgenden .NET Versionen und Laufzeitumgebungen zu verwenden: .NET 5.x und .NET Core 3.x. Dadurch sind alle aktuellen und zukünftig unterstützten Laufzeitumgebungen abgedeckt. Durch .NET Core ist es möglich neben Windows auch für andere Betriebssysteme zu entwickeln und somit ist auch die Bibliothek unter Linux und Mac lauffähig.
 
-Die Asynchronität ist, wie schon beschrieben, durch das Sprachkonstrukt von C\# gegeben. Somit kann mittels Task-based Asynchronous Pattern (TAP) mit wenig Aufwand eine asynchrone API bereitgestellt werden. Zusätzlich wird die Drittanbieterbibliothek \textit{Task Parallel Library}, auch TPL abgekürzt, genutzt. Diese Bibliothek erlaubt es ein sogenanntes Dataflow-Mesh (vergleichbar mit einer Pipeline, nur mit erweiterter Funktionalität und mit Asynchronität als Hauptfokus) aufzubauen und somit eine asynchrone Datenverarbeitung innerhalb einer Applikation zu ermöglichen. Dabei besteht ein solches Dataflow-Mesh aus sogenannten \textit{Dataflow Blocks}. Die vordefinierten Dataflow Blocks geben entweder die Möglichkeit Daten zu puffern (\textit{Buffering Blocks}) oder zu verarbeiten (\textit{Execution Blocks}). Als weitere Möglichkeit bietet TPL an eigene Dataflow Blocks zu definieren, indem man die entsprechenden Basisklassen oder Interfaces implementiert.
+Die Asynchronität ist, wie schon beschrieben, durch das Sprachkonstrukt von C\# gegeben. Somit kann mittels \textit{Task-based Asynchronous Pattern} (TAP) mit wenig Aufwand eine asynchrone API bereitgestellt werden. Zusätzlich wird die Drittanbieterbibliothek \textit{Task Parallel Library}, auch TPL abgekürzt, genutzt. Diese Bibliothek erlaubt es ein sogenanntes \textit{Dataflow-Mesh} (vergleichbar mit einer Queue, nur mit erweiterter Funktionalität und mit Asynchronität als Hauptfokus) aufzubauen und somit eine asynchrone Datenverarbeitung innerhalb einer Applikation zu ermöglichen. Dabei besteht ein solches \textit{Dataflow-Mesh} aus sogenannten \textit{Dataflow Blocks}. Die vordefinierten Dataflow Blocks geben entweder die Möglichkeit Daten zu puffern (\textit{Buffering Blocks}) oder zu verarbeiten (\textit{Execution Blocks}). Als weitere Möglichkeit bietet TPL an, eigene Dataflow Blocks zu definieren, indem man die entsprechenden Basisklassen oder Interfaces implementiert werden.
 
-Die erforderlichen Grundlagen und \textit{Best Practices} bezüglich asynchroner Programmierung, und im Speziellen der Verwendung von Dataflows, wurden aus dem Fachbuch \citetitle{cleary2019concurrency} von \citeauthor{cleary2019concurrency}, Microsoft-MVP und Experte in asynchroner Programmierung, entnommen.
+Die erforderlichen Grundlagen und \textit{Best Practices} bezüglich asynchroner Programmierung, vor allem im Speziellen bei Verwendung von \textit{Dataflow Blocks}, wurden aus dem Fachbuch \citetitle{cleary2019concurrency} von \citeauthor{cleary2019concurrency}, Microsoft-MVP und Experte in asynchroner Programmierung, entnommen.
 
 \subsubsection{Gefundene Fehler}
 \label{subsubsec:gefundende-fehler}
@@ -21,11 +21,11 @@ Nachfolgend sind hier Bugs aufgeführt, die innerhalb dieser Bachelorarbeit in C
 
 Die Applikation gliedert sich in folgende Komponenten:
 \begin{enumerate}
-    \item Transports: Eine Transport-Klasse übernimmt das Senden und Empfangen von CoAP-Nachrichten auf dem jeweiligen Protokoll. Zum Beispiel ist die \textit{UdpTransport}-Klasse verantwortlich für das Senden und Empfangen von CoAP-Nachrichten, die mittels UDP übertragen werden.
-    \item Channels: Ein Channel repräsentiert eine aktive Verbindung zwischen einem CoAP-Client und CoAP-Server über ein beliebiges Protokoll. Für UDP gibt es z.B. eine \textit{UDPChannel}-Klasse, die auf einem vordefinierten Port auf UDP-Pakete horcht und über diesen Antworten an den jeweiligen Client zurücksendet.
-    \item Serializers: Ein \textit{Serializer} bietet Methoden für das De- als auch Serialisieren von CoAP-Nachrichten, für ein bestimmtes Nachrichtenformat und/oder eine CoAP-Version an. Dabei erhalten diese die Daten entweder von einem der \textit{Channels} oder von einer Ressource, die auf dem Server registriert ist.
-    \item Handlers: Ein Handler kümmert sich um die Verarbeitung und Weiterleitung von CoAP-Request an die jeweiligen Ressourcen oder von CoAP-Responses an den \textit{Serializer}.
-    \item Ressourcen: Eine Ressource ist vergleichbar zu einem HTTP- bzw. Controller-Endpunkt. Diese registriert sich beim Server unter einer definierten URI und gibt an, welche Methoden (GET, POST, PUT, DELETE) diese anbietet.
+    \item Transports: Eine Transport-Klasse übernimmt das Senden und Empfangen von CoAP-Nachrichten auf dem jeweiligen Protokoll. Zum Beispiel ist die \textit{UdpTransport}-Klasse verantwortlich für das Senden und Empfangen von CoAP-Nachrichten, die mittels UDP übertragen wurden.
+    \item Channels: Ein \textit{Channel} repräsentiert eine aktive Verbindung zwischen einem CoAP-Client und CoAP-Server über ein beliebiges Protokoll. Für UDP gibt es z.B. eine \textit{UDPChannel}-Klasse, die auf einem vordefinierten Port auf UDP-Pakete horcht und über diesen Antworten an den jeweiligen Client zurücksendet.
+    \item Serializers: Ein \textit{Serializer} bietet Methoden für das Deserialisieren als auch Serialisieren von CoAP-Nachrichten, für ein bestimmtes Nachrichtenformat und/oder eine CoAP-Version an. Dabei erhalten diese die Daten entweder von einem der \textit{Channels} oder von einer \textit{Ressource}, die auf dem Server registriert ist.
+    \item Handlers: Ein \textit{Handler} kümmert sich um die Verarbeitung und Weiterleitung von CoAP-Request an die jeweiligen Ressourcen oder von CoAP-Responses an den \textit{Serializer}.
+    \item Ressourcen: Eine \textit{Ressource} ist vergleichbar mit einem HTTP- bzw. Controller-Endpunkt. Diese registriert sich beim Server unter einer definierten URI und gibt an, welche Methoden (GET, POST, PUT, DELETE) sie anbietet.
 \end{enumerate}
 
 \begin{figure}[ht]
@@ -49,19 +49,19 @@ Die Applikation gliedert sich in folgende Komponenten:
         \draw[->, color=uibkorange, very thick] (udp-channel.east) -| (serializer.north);
         \draw[->, color=uibkorange, very thick] (tcp-channel.east) -| (serializer.south);
         \draw[->, color=uibkorange, very thick] (serializer.east) -- ++(0.2, 0) |- (request-handler.west);
-        \draw[->, color=uibkorange, very thick] (serializer.east) -- ++(0.2, 0) |- (response-handler.west);
+        \draw[<->, color=uibkblue, very thick] (serializer.east) -- ++(0.2, 0) |- (response-handler.west);
         \draw[->, color=uibkorange, very thick] (request-handler.north) -- (router.south);
         \draw[->, color=uibkorange, very thick] (router.east) -| (resource.north);
         \draw[->, color=uibkorange, very thick] (resource.south) -- (controller.north);
-        \draw[->, color=uibkorange, very thick] (response-handler.east) -- (controller.west);
+        \draw[<-, color=uibkblue, very thick] (response-handler.east) -- (controller.west);
     \end{tikzpicture}
     \caption{Überblick Softwarearchitektur}
     \label{fig:ueberblick-softwarearchitektur}
 \end{figure}
 
-Dabei stellt jede Komponente einen \textit{Dataflow Block} dar. Somit kann eine asynchrone Weiterleitung zwischen den einzelnen Komponenten sichergestellt werden. Dies geschieht dadurch, dass die einzelnen Blöcke miteinander verknüpft und auf ankommende Daten in einer asynchronen Weise gewartet werden. Damit können Daten, sobald diese verfügbar sind, umgehend verarbeitet werden. Auch übernimmt das Dataflow-Mesh die Verantwortung für die angewendete Parallelität und Synchronität der Daten. Somit kann eine flexible und anpassbare Verarbeitungskette implementiert werden, die vollkommen Asynchron arbeitet.
+Dabei stellt jede Komponente einen \textit{Dataflow Block} dar. Somit kann eine asynchrone Weiterleitung zwischen den einzelnen Komponenten sichergestellt werden. Dies geschieht dadurch, dass die einzelnen Blöcke miteinander verknüpft und auf ankommende Daten in einer asynchronen Weise gewartet werden. Dadurch können Daten, sobald diese verfügbar sind, umgehend verarbeitet werden. Auch übernimmt das \textit{Dataflow-Mesh} die Verantwortung für die angewendete Parallelität und Synchronität der Daten. Somit kann eine flexible und anpassbare Verarbeitungskette implementiert werden, die vollkommen Asynchron arbeitet.
 
-Die API des Serializers ist inspiriert von der API des Sytem.Text.Json Serializers für JSON Dateien, der von Microsoft entwickelt wird. Der CoapMessageSerializer bietet dabei folgende Schnittstellen an:
+Die API des Serializers ist inspiriert von der API des \textit{Sytem.Text.Json Serializers}\footnote{\href{https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializer?view=net-6.0}{Dokumentation zum System.Text.Json Serializer}} für JSON Dateien, der von Microsoft entwickelt wurde. Der CoapMessageSerializer bietet dabei folgende Schnittstellen an:
 \begin{itemize}
     \item \mintinline{csharp}{void CoapMessage Deserialize(ReadonlySpan<byte> value);}
     \item \mintinline{csharp}{Task<CoapMessage> DeserializeAsync(Stream value, CancellationToken ct);}
@@ -72,7 +72,7 @@ Die API des Serializers ist inspiriert von der API des Sytem.Text.Json Serialize
 \subsection{Besonderheiten}
 \label{subsec:besonderheiten}
 
-Nachfolgend werden Codeausschnitte und Teile des Projekts aufgelistet, die besondere Erwähnung finden. Wie schon beschrieben, wurde bei der Neuimplementierung von CoAP.NET darauf geachtet eine asynchrone Schnittstelle zur Verfügung zu stellen.
+Nachfolgend werden Codeausschnitte und Teile des Projekts aufgelistet, die besondere Erwähnung finden. Wie schon beschrieben, wurde bei der Neuimplementierung von CoAP.NET darauf geachtet sowohl eine synchrone als auch eine asynchrone Schnittstelle zur Verfügung zu stellen.
 
 \subsubsection{Struktur der Optionen}
 \label{subsubsec:struktur-der-optionen}
@@ -104,7 +104,7 @@ Beim Verarbeitungsprozess der Optionen einer CoAP-Nachricht wurde darauf Wert ge
     \label{fig:hierarchie-der-coap-optionen-im-code}
 \end{figure}
 
-Die oberste Basisklasse \mintinline{csharp}{CoapOption}, von der alle CoAP-Optionen erben, beinhaltet alle Basisfunktionalitäten einer Option, wie sie im RFC 7252 von \citeauthor{RFC7252} definiert ist. Als Nächstes gibt, es die Basisklasse \mintinline{csharp}{CoapOption<T>} die den Wert der Option mit dem Typ T hält. T kann hierbei ein beliebiger Datentyp oder Klasse sein.
+Die oberste Basisklasse \mintinline{csharp}{CoapOption}, von der alle CoAP-Optionen erben, beinhaltet alle Basisfunktionalitäten einer Option, wie sie im RFC 7252 von \citeauthor{RFC7252} definiert ist. Als Nächstes gibt es die Basisklasse \mintinline{csharp}{CoapOption<T>} die den Wert der Option mit dem Typ T hält. T kann hierbei ein beliebiger Datentyp oder Klasse sein.
 
 Für die im RFC 7252 von \citeauthor{RFC7252} definierten, möglichen Werte die eine CoAP-Option besitzen kann, also \textit{string}, \textit{unsigned integer} oder \textit{opaque}, gibt es die jeweilige dazugehörige Basisklasse:
 
@@ -114,38 +114,38 @@ Für die im RFC 7252 von \citeauthor{RFC7252} definierten, möglichen Werte die 
     \item OpaqueOption: Für CoAP-Optionen mit einem Byte-Array als Wert. Das bedeutet OpaqueOption erbt von der Basisklasse \mintinline{csharp}{CoapOption<ReadonlyMemory<byte>>}.
 \end{itemize}
 
-Die konkrete Implementation der einzelnen CoAP-Optionen erben von einer der drei zuvor genannten Basisklassen. Das folgende Codebeispiel X zeigt dies beispielsweise anhand der Optionen-Klasse UriHost.
+Die konkrete Implementation der einzelnen CoAP-Optionen erben von einer der drei zuvor genannten Basisklassen. Das folgende Listing \ref{listing:uri-host-implementation} zeigt dies beispielsweise anhand der Optionen-Klasse UriHost.
 
-Mit dieser Struktur können einfach neue CoAP-Optionen in den Programmfluss eingebunden werden, in dem man die entsprechenden Basisklassen implementiert. Diese Struktur erleichtert auch das Lesen und Schreiben von Optionen, in dem der OptionReader und OptionWriter auf die Basisklasse \mintinline{csharp}{CoapOption} oder \mintinline{csharp}{CoapOption<T>} berufen.
+Mit dieser Struktur können einfach neue CoAP-Optionen in den Programmfluss eingebunden werden, in dem man die entsprechenden Basisklassen implementiert. Diese Struktur erleichtert auch das Lesen und Schreiben von Optionen, in dem der OptionReader und OptionWriter sich auf eine der beiden Basisklassen \mintinline{csharp}{CoapOption} oder \mintinline{csharp}{CoapOption<T>} beruft.
 
-Für das Lesen von Optionen wird das Fabrik-Modell (Factory-Pattern) verwendet, um Optionen anhand der gelesenen Daten zu erstellen. Diese Fabriken werden durch das Interface IOptionFactory definiert, das die Nummer der Option und eine Methode Create enthält. Dadurch kann der OptionReader die Daten lesen, die passende Fabrik über die Nummer aussuchen und durch die Create-Methode die Option erstellen.
+Für das Lesen von Optionen wird das Fabrik-Modell (Factory-Pattern) verwendet, um Optionen anhand der gelesenen Daten zu erstellen. Diese Fabriken werden durch das Interface \mintinline{csharp}{IOptionFactory} definiert, das die Nummer der Option und eine Methode \mintinline{csharp}{Create} enthält. Dadurch kann der OptionReader die Daten lesen, die passende Fabrik über die Nummer aussuchen und durch die Create-Methode die Option erstellen.
 
-Das Codebeispiel \ref{listing:synchrones-lesen-von-optionen} erledigt diesen Vorgang synchron mithilfe einer \mintinline{csharp}{while}-Schleife, die den nachfolgenden Verarbeitungprozess ausführt, solange es Daten zu verarbeiten gibt. Wie im Kapitel \ref{subsubsec:aufbau-einer-option} schon erklärt, gibt es zwei Bedingungen, die das Ende einer Serie von Optionen in einer CoAP-Nachricht markieren:
+Das Listing \ref{listing:synchrones-lesen-von-optionen} erledigt diesen Vorgang synchron mithilfe einer \mintinline{csharp}{while}-Schleife, die den nachfolgenden Verarbeitungsprozess ausführt, solange es Daten zu verarbeiten gibt. Wie im Kapitel \ref{subsubsec:aufbau-einer-option} schon erklärt, gibt es zwei Bedingungen, die das Ende einer Serie von Optionen in einer CoAP-Nachricht markieren:
 \begin{itemize}
-    \item Es sind keine Daten zum Lesen verfügbar.
-    \item Der Payloadmarker, also ein Byte voller logischer Einsen - Hexadezimal als 0xFF geschrieben.
+    \item Es sind keine Daten zum Lesen verfügbar (EoF).
+    \item Der Payloadmarker, also ein Byte voller logischer Einsen, in Hexadezimal als 0xFF geschrieben, wird gelesen.
 \end{itemize}
 
-Treten keine der beiden Bedingungen ein, dann wird im nächsten Schritt zuerst die Kopfzeile der Optionen, also das erste Byte gelesen, in dem Daten für die weitere Verarbeitung der Option beinhaltet sind, gelesen. Abhängig davon, welche Daten aus der Kopfzeile gelesen wurden, werden optional noch die erweiterte \textit{Option Delta} und \textit{Option Length} gelesen, falls vorhanden. Abschließend wird dann noch der Wert der Option, anhand der Typisierung der Option, sprich als \mintinline{csharp}{string}, \mintinline{csharp}{int} oder \mintinline{csharp}{byte}s, gelesen. Die Klasse \textit{OptionData} beinhaltet diese Informationen und stellt einen einfachen Zugriff auf diese Daten dar. Diese \textit{OptionData}-Klasse wird durch den Methodenaufruf in Zeile 8 erzeugt. Diese Methode \textit{ReadOptionData} liefert, wie schon erwähnt, die \textit{OptionData} und über das \mintinline{csharp}{out}-Schlüsselwort auch die Anzahl der gelesenen Bytes zurück.
+Treten keine der beiden Bedingungen ein, dann wird im nächsten Schritt zuerst die Kopfzeile der Optionen, also das erste Byte, in dem Daten für die weitere Verarbeitung der Option beinhaltet sind, gelesen. Abhängig davon, welche Daten aus der Kopfzeile erfasst wurden, werden optional noch die erweiterte \textit{Option Delta} und \textit{Option Length} konsumiert, falls vorhanden. Abschließend wird dann noch der Wert der Option, anhand der Typisierung der Option, sprich als \mintinline{csharp}{string}, \mintinline{csharp}{int} oder \mintinline{csharp}{byte}s, interpretiert. Die Klasse \textit{OptionData} beinhaltet diese Informationen und stellt einen einfachen Zugriff auf diese Daten dar. Diese \textit{OptionData}-Klasse wird durch den Methodenaufruf in Zeile 8 erzeugt. Diese Methode \textit{ReadOptionData} liefert, wie schon erwähnt, die \textit{OptionData} und, über das \mintinline{csharp}{out}-Schlüsselwort, auch die Anzahl der gelesenen Bytes zurück.
 
 Im nächsten Schritt (Zeile 13) wird die Nummer der aktuell gelesenen Option für den nächsten Lesevorgang zwischengespeichert, da diese als Berechnungsgrundlage für die nächste \textit{Optionen Number} verwendet wird. In Zeile 14 werden die Anzahl an gelesenen Bytes zur Variable \textit{offset} aufsummiert. Somit entspricht die Variable \textit{offset} der derzeitigen Position in dem Set an Daten.
 
 In den Zeilen 16 - 19 wird die passende \textit{IOptionFactory} ausgewählt, falls es solch eine gibt und sonst wird als Fallback die \textit{UnrecognizedOptionFactory} gewählt, damit nicht implementierte Optionen verarbeitet werden können. Die \textit{UnrecognizedOptionFactory} erzeugt eine \textit{UnrecognizedOption}, die nur die gelesenen Daten beinhaltet.
 
-In Zeile 21 wird die Option mittels der gewählten \textit{IOptionFactory} und der \textit{OptionData} erzeugt und in Zeile 22 zur \textit{OptionCollection} hinzugeführt. Wenn keine Daten mehr verfügbar sind und der Payloadmarker gelesen wurde, wird die \textit{OptionCollection} und den bisherigen Offset zurückgegeben.
+In Zeile 21 wird die Option mittels der gewählten \textit{IOptionFactory} und der \textit{OptionData} erzeugt und in Zeile 22 zur \textit{OptionCollection} hinzugeführt. Wenn keine Daten mehr verfügbar sind oder der Payloadmarker gelesen wurde, wird die \textit{OptionCollection} und der bisherige Offset zurückgegeben.
 
-Für das asynchrone Lesen von Optionen wird ein ähnlicher Prozess durchlaufen. Der einzige Unterschied liegt darin, dass alle vorher synchron verwendeten Methoden durch ihr asynchrones Gegenstück ersetzt werden. Deshalb wird auch nicht näher auf das Codebeispiel \ref{listing:asynchrones-lesen-von-optionen}, das diesen Vorgang repräsentiert, eingegangen.
+Für das asynchrone Lesen von Optionen wird ein ähnlicher Prozess durchlaufen. Der einzige Unterschied liegt darin, dass alle vorher synchron verwendeten Methoden durch ihr asynchrones Gegenstück ersetzt werden. Deshalb wird auch nicht näher auf das Listing \ref{listing:asynchrones-lesen-von-optionen}, das diesen Vorgang repräsentiert, eingegangen.
 
-Für das synchrone Schreiben von Optionen wird ein ähnliches Modell verfolgt, wie zuvor beschrieben beim synchronen Lesen von Optionen. Hierbei verwendet der OptionWriter eine Kollektion von IOptionSerializer, die eine Instanz von CoapOption in Bytes, mittels der Methode Serialize, umwandelt. Da dieser Code keine große Komplexität aufweist, wird auf eine detaillierte Beschreibung des Codes verzichtet und nur auf diesen verwiesen (Codebeispiel \ref{listing:synchrones-schreiben-von-optionen}).
+Für das synchrone Schreiben von Optionen wird ein ähnliches Modell verfolgt, wie zuvor beschrieben beim synchronen Lesen von Optionen. Hierbei verwendet der \textit{OptionWriter} eine Kollektion von \textit{IOptionSerializer}, die eine Instanz von CoapOption in Bytes, mittels der Methode \mintinline{csharp}{Serialize}, umwandelt. Da dieser Code keine große Komplexität aufweist, wird auf eine detaillierte Beschreibung des Codes verzichtet und nur auf diesen im Listing \ref{listing:asynchrones-schreiben-von-optionen} verwiesen.
 
 Dasselbe gilt auch für das asynchrone Schreiben von Optionen, wie es im Codebeispiel \ref{listing:asynchrones-schreiben-von-optionen} programmiert wurde.
 
 \subsubsection{CoAP Code}
 \label{subsubsec:coap-code}
 
-Die Struktur von CoAP Codes ähnelt dem vorher im Kapitel \ref{subsubsec:struktur-der-optionen} beschriebenen Konstrukt der CoAP Optionen und wird durch das Bild \ref{fig:hierarchie-der-coap-codes} veranschaulicht. Alle CoAP Codes erben von der Basisklasse \mintinline{csharp}{CoapCode}, die grundlegende Eigenschaften wie den Class- und Detail-Bestandteil des CoAP Codes beinhalten. Hier spaltet sich die Struktur in die Klassen \mintinline{csharp}{RequestCode} und \mintinline{csharp}{ResponseCode} auf, die jeweils CoAP-Nachrichten in Anfragen (Requests) und Antworten (Responses) unterteilt.
+Die Struktur von CoAP Codes ähnelt dem vorher im Kapitel \ref{subsubsec:struktur-der-optionen} beschriebenen Konstrukt der CoAP Optionen und wird durch das Bild \ref{fig:hierarchie-der-coap-codes} veranschaulicht. Alle CoAP Codes erben von der Basisklasse \mintinline{csharp}{CoapCode}, die grundlegende Eigenschaften, wie den Class- und Detail-Bestandteil des CoAP Codes, beinhalten. Hier spaltet sich die Struktur in die Klassen \mintinline{csharp}{RequestCode} und \mintinline{csharp}{ResponseCode} auf, die jeweils CoAP-Nachrichten in Anfragen (Requests) und Antworten (Responses) unterteilt.
 
-Request Codes im CoAP-Kontext bestehen zu einem Großteil aus den sogenannten Method Codes - sprich GET, POST, PUT und DELETE. CoAP Codes mit einem \textit{Class}-Wert von 0 entsprechen einem Request. Hier stellt mit einer \textit{Empty Message}, 0.00 als Code definiert, ein Sonderfall dar. Eine Empty Message markiert hierbei eine CoAP-Nachricht jedoch nicht als Request oder Response, sondern als Nachricht, die folgende Eigenschaften besitzt:
+Request Codes im CoAP-Kontext bestehen zu einem Großteil aus den sogenannten Method Codes - sprich GET, POST, PUT und DELETE. CoAP Codes mit einem \textit{Class}-Wert von 0 entsprechen einem Request. Hier stellt eine CoAP-Nachricht, die als \textit{Empty Message} deklariert wurde, einen Sonderfall dar, welcher als Code 0.00 definiert wird. Eine Empty Message markiert hierbei eine CoAP-Nachricht jedoch nicht als Request oder Response, sondern als Nachricht, die folgende Eigenschaften besitzt:
 \begin{itemize}
     \item Der Code ist 0.00.
     \item Die Tokenlänge ist auf 0 gesetzt.

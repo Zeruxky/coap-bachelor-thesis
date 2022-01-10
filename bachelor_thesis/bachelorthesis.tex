@@ -16,6 +16,9 @@
 \usepackage{csquotes}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
+\usepackage{csquotes}
+
+\MakeOuterQuote{"}
 
 \usetikzlibrary{positioning}
 \usetikzlibrary{quotes,babel,angles}
@@ -29,6 +32,9 @@
 \graphicspath{{img/}}
 \newcommand*{\xchapter}{\stepcounter{chapter}\setcounter{section}{0}\addchap}
 \renewcommand*{\thesection}{\arabic{section}}
+
+\addto\captionsngerman{\let\appendixtocname\appendixname%
+\let\appendixpagename\appendixname}
 
 % define medatata
 \def\MTitle{Increasing throughput of server applications by using asynchronous techniques: A case study on CoAP.NET}
