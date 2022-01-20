@@ -49,7 +49,7 @@ Die Applikation gliedert sich in folgende Komponenten:
         \draw[->, color=uibkorange, very thick] (udp-channel.east) -| (serializer.north);
         \draw[->, color=uibkorange, very thick] (tcp-channel.east) -| (serializer.south);
         \draw[->, color=uibkorange, very thick] (serializer.east) -- ++(0.2, 0) |- (request-handler.west);
-        \draw[<->, color=uibkblue, very thick] (serializer.east) -- ++(0.2, 0) |- (response-handler.west);
+        \draw[<-, color=uibkblue, very thick] (serializer.east) -- ++(0.2, 0) |- (response-handler.west);
         \draw[->, color=uibkorange, very thick] (request-handler.north) -- (router.south);
         \draw[->, color=uibkorange, very thick] (router.east) -| (resource.north);
         \draw[->, color=uibkorange, very thick] (resource.south) -- (controller.north);
@@ -138,7 +138,7 @@ Für das asynchrone Lesen von Optionen wird ein ähnlicher Prozess durchlaufen. 
 
 Für das synchrone Schreiben von Optionen wird ein ähnliches Modell verfolgt, wie zuvor beschrieben beim synchronen Lesen von Optionen. Hierbei verwendet der \textit{OptionWriter} eine Kollektion von \textit{IOptionSerializer}, die eine Instanz von CoapOption in Bytes, mittels der Methode \mintinline{csharp}{Serialize}, umwandelt. Da dieser Code keine große Komplexität aufweist, wird auf eine detaillierte Beschreibung des Codes verzichtet und nur auf diesen im Listing \ref{listing:asynchrones-schreiben-von-optionen} verwiesen.
 
-Dasselbe gilt auch für das asynchrone Schreiben von Optionen, wie es im Codebeispiel \ref{listing:asynchrones-schreiben-von-optionen} programmiert wurde.
+Dasselbe gilt auch für das asynchrone Schreiben von Optionen, wie es im Listing \ref{listing:asynchrones-schreiben-von-optionen} programmiert wurde.
 
 \subsubsection{CoAP Code}
 \label{subsubsec:coap-code}

@@ -36,6 +36,8 @@
 \addto\captionsngerman{\let\appendixtocname\appendixname%
 \let\appendixpagename\appendixname}
 
+\renewcommand\listoflistingscaption{Auflistung der Listings}
+
 % define medatata
 \def\MTitle{Increasing throughput of server applications by using asynchronous techniques: A case study on CoAP.NET}
 \def\MAuthor{Philip Wille}
@@ -50,12 +52,13 @@
 
     \input{titlepage}
     \cleardoublepage
-    \tableofcontents 
+    \tableofcontents
     \cleardoublepage
     \pagenumbering{arabic}
     \pagestyle{plain} 
 
     \include{chapters/einleitung.tex}
+    \include{chapters/background.tex}
     \include{chapters/implementierung.tex}
     \include{chapters/messung.tex}
     \include{chapters/diskussion_der_ergebnisse.tex}

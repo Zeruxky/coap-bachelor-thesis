@@ -1,0 +1,167 @@
+\documentclass[11pt,t,usepdftitle=false,aspectratio=169,usenames,dvipsnames]{beamer}
+\usetheme[nototalframenumber,foot,logo,nosectiontitlepage]{uibk}
+\headerimage{1}
+
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{minted}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{csquotes}
+
+\MakeOuterQuote{"}
+
+\usetikzlibrary{calc}
+
+\title[Finale Präsentation CoAP.NET]{Increasing throughput of server applications by using asynchronous techniques}
+\subtitle{A case study on CoAP.NET}
+\author{Philip Wille\\Betreuer: Michael Felderer, Andreas Danek}
+\date{2022-01-12}
+
+\begin{document}
+    \maketitle
+
+    \section{Programmierparadigmen}
+    \label{sec:programmierparadigmen}
+    \begin{frame}
+        \frametitle{Programmierparadigmen}
+        \begin{itemize}
+            \item<1-> Synchron
+            \begin{itemize}
+                \item<3-> \textcolor{uibkblue}{\textbf{Stoppt}} den Programmfluss.
+                \item<5-> Überprüft periodisch, ob Funktion beendet ist.
+                \item<7-> Ist als "Blocked" oder "Waiting" markiert.
+            \end{itemize}
+            \item<2-> Asynchron
+            \begin{itemize}
+                \item<4-> Kann im Programmfluss weiter gehen.
+                \item<6-> Ein Event markiert die Beendigung der Funktion.
+                \item<8-> Ist frei für andere Aufgaben.
+            \end{itemize}
+        \end{itemize}
+    \end{frame}
+
+    \section{Synchroner und asynchroner Server}
+    \label{sec:synchroner-und-asynchroner-server}
+    \subsection{Synchroner Server}
+    \label{subsec:synchroner-server}
+    \begin{frame}
+        \frametitle{Synchroner Server}
+        \begin{figure}[ht]
+            \begin{tikzpicture}
+                \node at (0,.3) {Database};
+                \node at (-3,.3) {Server};
+                \node at (-6,.3) {Client 2};
+                \node at (-9,.3) {Client 1};
+                
+                \draw[thick, uibkorange] (-9,0) -- node[left] {prepare}(-9,-0.5);
+                \draw[thick, uibkgraym] (-6,0) -- (-6,-0.5);
+                \draw[thick, uibkgraym] (-3,0) -- (-3,-0.5);
+                \draw[thick, uibkgraym] (-0,0) -- (0,-0.5);
+                \onslide<1->
+                \draw[->, thick, uibkorange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
+                \onslide<2->
+                \draw[thick, uibkorange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
+                \onslide<3->
+                \draw[->, thick, uibkorange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+                \draw[thick, uibkgraym] (0, -0.5) -- (0, -1);
+                \onslide<4->
+                \draw[thick, uibkorange] (-0,-1) -- node [right] {execute} (0,-3);
+                \onslide<5->
+                \draw[thick, uibkgraym] (-6, -0.5) -- (-6, -1);
+                \draw[thick, uibkblue] (-6, -1) -- node[left] {prepare} (-6, -1.5);
+                \onslide<6->
+                \draw[->, thick, uibkblue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
+                \draw[thick, uibkgraym] (-3,-1) -- (-3,-1.5);
+                \onslide<7->
+                \draw[<-, thick, uibkorange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+                \draw[thick, uibkgraym] (-3,-1.5) -- (-3,-3);
+                \onslide<8->
+                \draw[thick, uibkorange] (-3,-3) -- (-3,-3.5);
+                \draw[<-, thick, uibkorange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+                \draw[thick, uibkgraym] (-9,-0.5) -- (-9,-3.5);
+                \onslide<9->
+                \draw[thick, uibkorange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
+                \onslide<10->
+                \draw[thick, uibkblue] (-3,-3.5) -- node [midway, left] {prepare SQL} (-3,-4);
+                \onslide<11->
+                \draw[thick, uibkgraym] (-0,-3) -- (-0,-4);
+                \draw[->, thick, uibkblue] (-3,-4) -- node [midway, above] {SQL Request 2} (-0,-4);
+                \onslide<12->
+                \draw[thick, uibkblue] (-0,-4) -- node [midway, right] {execute} (-0,-5);
+                \onslide<13->
+                \draw[thick, uibkgraym] (-3,-4) -- (-3,-5);
+                \draw[<-, thick, uibkblue] (-3,-5) -- node [midway, above] {SQL Response 2} (-0,-5);
+                \onslide<14->
+                \draw[thick, uibkblue] (-3,-5) -- (-3,-5.5);
+                \onslide<15->
+                \draw[thick, uibkgraym] (-6,-1.5) -- (-6,-5.5);
+                \draw[<-, thick, uibkblue] (-6,-5.5) -- node [midway, above] {Response 2} (-3,-5.5);
+                \draw[thick, uibkgraym] (0, -5) -- (0, -5.5);
+            \end{tikzpicture}
+            \caption{Sequenzdiagramm eines synchronen Servers}
+            \label{figure:sequence-diagram-of-synchronous-server}
+        \end{figure}
+    \end{frame}
+
+    \subsection{Asynchroner Server}
+    \label{subsec:asynchroner-server}
+    \begin{frame}
+        \frametitle{Asynchroner Server}
+        \begin{figure}[ht]
+            \begin{tikzpicture}
+                \node at (0,.3) {Database};
+                \node at (-3,.3) {Server};
+                \node at (-6,.3) {Client 2};
+                \node at (-9,.3) {Client 1};
+                
+                \draw[thick, uibkorange] (-9,0) -- node[left] {prepare}(-9,-0.5);
+                \draw[thick, uibkgraym] (-6,0) -- (-6,-0.5);
+                \draw[thick, uibkgraym] (-3,0) -- (-3,-0.5);
+                \draw[thick, uibkgraym] (-0,0) -- (0,-0.5);
+                \onslide<1->
+                \draw[->, thick, uibkorange] (-9,-0.5) -- node[midway,above] {Request 1} (-3,-0.5);
+                \onslide<2->
+                \draw[thick, uibkorange] (-3,-0.5) -- node[left] {prepare SQL}(-3,-1);
+                \onslide<3->
+                \draw[thick, uibkgraym] (-6,-0.5) -- (-6,-1.5);
+                \draw[->, thick, uibkorange] (-3,-1) -- node[midway,above] {SQL Request 1} (-0,-1);
+                \draw[thick, uibkgraym] (0, -0.5) -- (0, -1);
+                \onslide<4->
+                \draw[thick, uibkorange] (-0,-1) -- node [right] {execute} (0,-3);
+                \onslide<5->
+                \draw[thick, uibkgraym] (-3,-1) -- (-3,-1.5);
+                \draw[->, thick, uibkblue] (-6,-1.5) -- node[midway,above] {Request 2} (-3,-1.5);
+                \onslide<6->
+                \draw[thick, uibkblue] (-3,-1.5) -- node[midway, left] {prepare SQL} (-3,-2);
+                \onslide<7->
+                \draw[->, thick, uibkblue] (-3,-2) -- node [midway, above] {SQL Request 2} (-0,-2);
+                \onslide<8->
+                \draw[thick, uibkgraym] (-3,-2) -- (-3,-3);
+                \draw[<-, thick, uibkorange] (-3,-3) -- node [midway, above] {SQL Response 1} (0,-3);
+                \onslide<9->
+                \draw[thick, uibkorange] (-3,-3) -- (-3,-3.5);
+                \draw[<-, thick, uibkorange] (-9,-3.5) -- node [midway, above] {Response 1} (-3,-3.5);
+                \draw[thick, uibkgraym] (-9,-0.5) -- (-9,-3.5);
+                \onslide<10->
+                \draw[thick, uibkblue] (-0,-3) -- node [midway, right] {execute} (-0,-4);
+                \onslide<11->
+                \draw[thick, uibkorange] (-9,-3.5) -- node [midway, left] {process} (-9,-5.5);
+                \onslide<12->
+                \draw[thick, uibkgraym] (-3,-3.5) -- (-3,-4);
+                \draw[<-, thick, uibkblue] (-3,-4) -- node [midway, above] {SQL Response 2} (-0,-4);
+                \onslide<13->
+                \draw[thick, uibkblue] (-3,-4) -- (-3,-4.5);
+                \draw[thick, uibkgraym] (0,-4) -- (0,-5.5);
+                \draw[<-, thick, uibkblue] (-6,-4.5) -- node [midway, above] {Response 2} (-3,-4.5);
+                \draw[thick, uibkgraym] (-6,-1.5) -- (-6,-4.5);
+                \onslide<14->
+                \draw[thick, uibkblue] (-6,-4.5) -- node [midway, left] {process} (-6,-5.5);
+                \draw[thick, uibkgraym] (-3,-4.5) -- (-3,-5.5);
+            \end{tikzpicture}
+            \caption{Sequenzdiagramm eines asynchronen Servers}
+            \label{figure:sequence-diagram-of-asynchronous-server}
+        \end{figure}
+    \end{frame}
+\end{document}
