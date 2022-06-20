@@ -9,15 +9,18 @@
 \usepackage{tikz}
 \usepackage{hyperref}
 \usepackage{csquotes}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
 
 \MakeOuterQuote{"}
 
 \usetikzlibrary{calc}
+\usetikzlibrary{positioning}
 
 \title[Finale Präsentation CoAP.NET]{Increasing throughput of server applications by using asynchronous techniques}
 \subtitle{A case study on CoAP.NET}
 \author{Philip Wille\\Betreuer: Michael Felderer, Andreas Danek}
-\date{2022-01-12}
+\date{2022-06-21}
 
 \begin{document}
     \maketitle
@@ -164,4 +167,267 @@
             \label{figure:sequence-diagram-of-asynchronous-server}
         \end{figure}
     \end{frame}
+
+    \section{Constrained Application Protocol (CoAP)}
+    \begin{frame}
+        \frametitle{Constrained Application Protocol (CoAP)}
+        \begin{itemize}
+            \item<1-> Definiert im \href{https://tools.ietf.org/html/rfc7252}{RFC 7252}.
+            \item<2-> Entwickelt für \textcolor{uibkblue}{\textbf{eingeschränkte}} Umgebungen.
+            \item<3-> Basiert auf einem \textcolor{uibkblue}{\textbf{Anfragen-Antwort}}-Modell zur Kommunikation.
+            \item<4-> Verwendung von \textcolor{uibkblue}{\textbf{U}}ser \textcolor{uibkblue}{\textbf{D}}atagram \textcolor{uibkblue}{\textbf{P}}rotocol (UDP).
+            \item<5-> Alternativen: MQTT, CoAP over TCP, CoAP over Websockets.
+            \item<6-> Implementierungen für verschiedene Programmiersprachen.
+        \end{itemize}
+    \end{frame}
+
+    \subsection{CoAP.NET}
+    \begin{frame}
+        \frametitle{CoAP.NET}
+        \begin{itemize}
+            \item<1-> Implementierung von CoAP für C\# nach RFC 7252.
+            \item<2-> Entwicklung inaktiv.
+            \item<3-> Nur teilweise asynchron.
+            \item<4-> Bietet eine Implementation für Client und Server.
+        \end{itemize}
+    \end{frame}
+
+    \section{Bachelorarbeit}
+    \begin{frame}
+        \frametitle{Bachelorarbeit}
+
+        \begin{itemize}
+            \item<1-> \textcolor{uibkblue}{\textit{>>Hat die asynchrone Implementation eines Servers einen Einfluss auf dessen Durchsatzrate?<<}} \onslide<2-> \textbf{- \textcolor{uibkblue}{\textbf{Nein}}}.
+            \item<3-> Vollständige Neuimplementierung von CoAP.NET \onslide<4->\textbf{\textcolor{uibkblue}{ausgenommen retransmission und block-wise transfer}}.
+            \item<5-> Implementierungen von Tests zur Messung des Durchsatzes.
+            \item<6-> Vergleich zwischen synchroner und asynchroner Version.
+            \item<7-> Quellcode frei verfügbar auf \href{https://github.com/world-direct/CoAP.NET}{GitHub}.
+            \item<8-> In Zusammenarbeit mit World-Direct eBusiness solutions GmbH.
+            \item<9-> Fokussierung auf Serialisierung und Deserialisierung als wichtigsten Baustein.
+            \item<10-> Implementation von CoAP over TCP zwecks Limitierung von UDP-Packets.
+        \end{itemize}
+    \end{frame}
+
+    \section{Implementierung}
+    \begin{frame}
+        \frametitle{Implementierung}
+
+        \begin{figure}[ht]
+            \centering
+            \begin{tikzpicture}[squarednode/.style={rectangle, draw=uibkblue!60, fill=uibkgraym!5, very thick, minimum size=5mm}]
+                \node[squarednode] (udp-transport) {UdpTransport};
+                \node[squarednode] (tcp-transport) [below=of udp-transport]{TcpTransport};
+                \node[squarednode] (udp-channel) [right=of udp-transport]{UdpChannel};
+                \node[squarednode] (tcp-channel) [right=of tcp-transport]{TcpChannel};
+        
+                \node[squarednode] (serializer) [below right=0.3 of udp-channel] {Serializer};
+                \node[squarednode] (request-handler) [right=3 of udp-channel] {RequestHandler};
+                \node[squarednode] (response-handler) [right=3 of tcp-channel] {ResponseHandler};
+        
+                \node[squarednode] (router) [above=of request-handler] {Router};
+                \node[squarednode] (resource) [right=of request-handler] {Resource};
+                \node[squarednode] (controller) [below=1.075 of resource] {Controller};
+                
+                \draw[->, color=uibkorange, very thick] (udp-transport.east) -- (udp-channel.west);
+                \draw[->, color=uibkorange, very thick] (tcp-transport.east) -- (tcp-channel.west);
+                \draw[->, color=uibkorange, very thick] (udp-channel.east) -| (serializer.north);
+                \draw[->, color=uibkorange, very thick] (tcp-channel.east) -| (serializer.south);
+                \draw[->, color=uibkorange, very thick] (serializer.east) -- ++(0.2, 0) |- (request-handler.west);
+                \draw[<-, color=uibkblue, very thick] (serializer.east) -- ++(0.2, 0) |- (response-handler.west);
+                \draw[->, color=uibkorange, very thick] (request-handler.north) -- (router.south);
+                \draw[->, color=uibkorange, very thick] (router.east) -| (resource.north);
+                \draw[->, color=uibkorange, very thick] (resource.south) -- (controller.north);
+                \draw[<-, color=uibkblue, very thick] (response-handler.east) -- (controller.west);
+            \end{tikzpicture}
+            \caption{Überblick Softwarearchitektur}
+            \label{fig:ueberblick-softwarearchitektur}
+        \end{figure}
+    \end{frame}
+
+    \section{Implementierung}
+    \begin{frame}
+        \frametitle{Implementierung}
+
+        \begin{itemize}
+            \item<1-> \mintinline[breaklines]{csharp}{void CoapMessage Deserialize(ReadonlySpan<byte> value);}
+            \item<2-> \mintinline[breaklines]{csharp}{Task<CoapMessage> DeserializeAsync(Stream value, CancellationToken ct);}
+            \item<3-> \mintinline[breaklines]{csharp}{void byte[] Serialize(CoapMessage message);}
+            \item<4-> \mintinline[breaklines]{csharp}{Task SerializeAsync(Stream stream, CoapMessage message, CancellationToken ct);}
+        \end{itemize}
+    \end{frame}
+
+    \section{Serialisierung und Deserialisierung}
+    \begin{frame}
+        \frametitle{Serialisierung und Deserialisierung}
+        
+        \begin{itemize}
+            \item<1-> Laufzeitmessung von \mintinline{csharp}{Serialize}, \mintinline{csharp}{SerializeAsync}, \mintinline{csharp}{Deserialize} und \mintinline{csharp}{DeserializeAsync} mittels \textit{\href{https://github.com/dotnet/BenchmarkDotNet}{BenchmarkDotnet}}.
+            \item<2-> Nachrichtengröße durch Optionen und Payload definiert.
+            \item<3-> Nachrichten zufällig generiert.
+            \item<4-> Messung mehrere hundert Male wiederholt.
+            \item<5-> Berechnung Mittelwert aus allen Durchläufen.
+            \item<6-> Kennzahlen
+            \begin{itemize}
+                \item<7-> durchschnittliche Laufzeit
+                \item<8-> Fehlertoleranz
+                \item<9-> Standardabweichung
+                \item<10-> allokierter Speicher
+                \item<11-> Anzahl der Objekte in Gen 0 und Gen 1 Speichersegment
+            \end{itemize}
+        \end{itemize}
+    \end{frame}
+    \begin{frame}
+        \frametitle{Ergebnis}
+        
+        \begin{figure}[h]
+            \centering
+            \begin{tikzpicture}[scale=0.8]
+                \begin{axis}[
+                    ylabel={Laufzeit [\mu s]},
+                    ymode=log,
+                    grid=both,
+                ]
+                \addplot[
+                    only marks,
+                ] table[
+                    x expr=\coordindex,
+                    col sep=semicolon,
+                    y=Mean,
+                ]
+                    {measurements/deserialize_result.csv};
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Messergebnisse von Deserialize-Methode als Diagramm}
+            \label{fig:messergebnisse-deserialize}
+        \end{figure}
+    \end{frame}
+    \begin{frame}
+        \frametitle{Ergebnis}
+        
+        \begin{figure}[h]
+            \centering
+            \begin{tikzpicture}[scale=0.8]
+                \begin{axis}[
+                    ylabel={Laufzeit [\mu s]},
+                    ymode=log,
+                    grid=both,
+                ]
+                \addplot[
+                    only marks,
+                ] table[
+                    x expr=\coordindex,
+                    col sep=semicolon,
+                    y=Mean,
+                ]
+                    {measurements/deserialize_async_result.csv};
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Messergebnisse von DeserializeAsync-Methode als Diagramm}
+            \label{fig:messergebnisse-deserialize-async}
+        \end{figure}
+    \end{frame}
+    \begin{frame}
+        \frametitle{Ergebnis}
+        
+        \begin{figure}[h]
+            \centering
+            \begin{tikzpicture}[scale=0.8]
+                \begin{axis}[
+                    ylabel={Laufzeit [\mu s]},
+                    ymode=log,
+                    grid=both,
+                ]
+                \addplot[
+                    only marks,
+                ] table[
+                    x expr=\coordindex,
+                    col sep=semicolon,
+                    y=Mean,
+                ]
+                    {measurements/serialize_result.csv};
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Messergebnisse von Serialize-Methode als Diagramm}
+            \label{fig:messergebnisse-seserialize}
+        \end{figure}
+    \end{frame}
+    \begin{frame}
+        \frametitle{Ergebnis}
+        
+        \begin{figure}[h]
+            \centering
+            \begin{tikzpicture}[scale=0.8]
+                \begin{axis}[
+                    ylabel={Laufzeit [\mu s]},
+                    ymode=log,
+                    grid=both,
+                ]
+                \addplot[
+                    only marks,
+                ] table[
+                    x expr=\coordindex,
+                    col sep=semicolon,
+                    y=Mean,
+                ]
+                    {measurements/serialize_async_result.csv};
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Messergebnisse von SerializeAsync-Methode als Diagramm}
+            \label{fig:messergebnisse-serialize-async}
+        \end{figure}
+    \end{frame}
+
+    \section{Nachrichtenübertragung}
+    \begin{frame}
+        \frametitle{Nachrichtenübetragung}
+    
+        \begin{itemize}
+            \item<1-> Simulation einer langsamen Client-Server-Kommunikation.
+            \item<2-> Geschwindigkeit von 4 B/s.
+            \item<3-> Nachrichtengröße durch Anzahl der Optionen und Größe der Payload definiert.
+            \item<4-> Client und Server auf selbem System.
+            \item<5-> Kommunikation über \textit{localhost} (127.0.0.1) mittels TCP.
+            \item<6-> Server öffnet zwei Ports
+            \begin{itemize}
+                \item<7-> 5683: Asynchrone Verarbeitung.
+                \item<8-> 5684: Synchrone Verarbeitung.
+            \end{itemize}
+            \item<9-> Nachricht von Client an Server.
+            \item<10-> Fünf voneinander unabhängige Durchläufe.
+            \item<11-> Laufzeit: Start bis Ende der Übertragung.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Ergebnis}
+    
+        \begin{itemize}
+            \item<1-> Asynchrone Verarbeitung skaliert mit steigender Nachrichtengröße.
+            \item<2-> Differenz zwischen Synchron und Asynchron nur einige hundert Millisekunden bis Sekunden.
+        \end{itemize}
+    \end{frame}
+
+    \section{Fazit}
+    \begin{frame}
+        \frametitle{Fazit}
+    
+        \begin{itemize}
+            \item<1-> Einsatz von Asynchronität abhängig von Problemstellung \textbf{\textcolor{uibkblue}{- allgemein jedoch die bessere Wahl}}.
+            \item<2-> Verarbeitungsgeschwindigkeit von Nachrichtengröße abhängig.
+            \item<3-> CoAP scheint nicht von Asynchronität zu profitieren.
+        \end{itemize}
+    \end{frame}
+
+    \section{Ausblick}
+    \begin{frame}
+        \frametitle{Ausblick}
+    
+        \begin{itemize}
+            \item<1-> Implementierung von \textbf{\textcolor{uibkblue}{retransmission}} und \textbf{\textcolor{uibkblue}{block-wise transfer}}.
+            \item<2-> Implementierung \textbf{\textcolor{uibkblue}{CoAP over TCP, Websockets und TLS}}.
+            \item<3-> Verbesserung der Nachrichtenverarbeitung.
+            \item<4-> Implementation von einigen \textit{syntactic sugar} Funktionalitäten aus ASP.NET Core.
+        \end{itemize}
+    \end{frame}
+
 \end{document}
